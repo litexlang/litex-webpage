@@ -3,8 +3,18 @@ import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
 import { L_runFrontend } from "@/app/lib/tslitex/L_Frontend";
 import { useDispatch } from "react-redux";
 import { modifyOutput } from "@/app/lib/store/slices/outputSlice";
+import { MutableRefObject } from "react";
+import { editor } from "monaco-editor";
 
-export default function ActionBar({ code, editorRef }) {
+export default function ActionBar({
+  code,
+  editorRef,
+}: {
+  code: string;
+  editorRef:
+    | MutableRefObject<editor.IStandaloneCodeEditor>
+    | MutableRefObject<null>;
+}) {
   // redux vars
   const dispatch = useDispatch();
 

@@ -1,6 +1,6 @@
 "use client";
-import { AppBar, Button, Toolbar, Typography, useTheme } from "@mui/material";
-import { useEffect, useState } from "react";
+import { AppBar, Button, Toolbar, Typography } from "@mui/material";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SnackbarProvider } from "notistack";
@@ -8,10 +8,7 @@ import { grey } from "@mui/material/colors";
 import { OpenInNew } from "@mui/icons-material";
 import routeList from "../lib/routeList";
 
-export default function AppLayout({ children }) {
-  // theme vars
-  const theme = useTheme();
-
+export default function AppLayout({ children }: { children: ReactNode }) {
   // route vars
   const pathname = usePathname();
 
@@ -24,7 +21,7 @@ export default function AppLayout({ children }) {
       "LitexLang | " +
         routeList.find((route) => {
           return route.path === pathname;
-        }).title
+        })?.title
     );
   };
 

@@ -8,10 +8,10 @@ export default function Output() {
 
   return (
     <Box>
-      {output.map((item) => (
-        <Box sx={{ bgcolor: red[100], mb: 1 }}>
-          {item.map((o) => (
-            <Typography variant="body2" sx={{ mb: 1 }}>
+      {output.map((item, index) => (
+        <Box key={index} sx={{ bgcolor: red[100], mb: 1 }}>
+          {item.map((o, i) => (
+            <Typography key={i} variant="body2" sx={{ mb: 1 }}>
               {o}
             </Typography>
           ))}
