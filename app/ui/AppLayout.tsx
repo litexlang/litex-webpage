@@ -1,12 +1,5 @@
 "use client";
-import {
-  AppBar,
-  Button,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { AppBar, Button, Toolbar, Typography, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
