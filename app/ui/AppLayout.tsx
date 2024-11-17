@@ -10,23 +10,22 @@ import {
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import routeList from "@/app/lib/routeList";
 import { SnackbarProvider } from "notistack";
 import { grey } from "@mui/material/colors";
 import { OpenInNew } from "@mui/icons-material";
+import routeList from "../lib/routeList";
 
 export default function AppLayout({ children }) {
-  // theme变量区
+  // theme vars
   const theme = useTheme();
-  const matchDownMd = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // route变量区
+  // route vars
   const pathname = usePathname();
 
-  // state变量区
+  // state vars
   const [title, setTitle] = useState("");
 
-  // 获取当前路由对应的路由名称
+  // get page title name
   const titleInit = () => {
     setTitle(
       "LitexLang | " +
@@ -42,10 +41,7 @@ export default function AppLayout({ children }) {
 
   return (
     <SnackbarProvider maxSnack={3} autoHideDuration={1000}>
-      <AppBar
-        elevation={0}
-        color={pathname === "/" ? "transparent" : "default"}
-      >
+      <AppBar elevation={0} color="default">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             {title}
