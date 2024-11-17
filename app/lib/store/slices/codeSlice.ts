@@ -6,7 +6,14 @@ export interface CodeState {
 }
 
 const initialState: CodeState = {
-  value: "// Input something",
+  value: `// starting with syllogism
+def mortal(something);
+def something is human => {something is mortal};
+let Socrates , Plato: Socrates is human;
+Socrates is mortal;
+if x : x is human => {x is mortal};
+let god : god is not mortal;
+prove_by_contradiction god is not human {god is mortal;} contradiction god is mortal;`,
 };
 
 export const codeSlice = createSlice({

@@ -21,9 +21,9 @@ export default function Home() {
   };
 
   return (
-    <Container component={"main"} sx={{ pt: 2 }}>
+    <Container component={"main"} sx={{ p: 2 }} maxWidth={"false"}>
       <Toolbar />
-      <Grid2 container>
+      <Grid2 container columnSpacing={1}>
         <Grid2 size={2}>
           <EnvWatcher />
         </Grid2>
