@@ -8,7 +8,7 @@ Check node version:
 node -v
 ```
 
-Open [https://nodejs.org/en](https://nodejs.org/en) if you have problems on install Nodejs.
+Open [https://nodejs.org/en](https://nodejs.org/en) if you have problems of installing Nodejs.
 
 Run the npm install command after installed node:
 
