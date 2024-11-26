@@ -1,8 +1,8 @@
-import { L_Env } from "./L_Env";
-import { RType } from "./L_Executor";
-import * as L_Executor from "./L_Executor";
-import { L_Scan } from "./L_Lexer";
-import * as L_Parser from "./L_Parser";
+import { L_Env } from "./L_Env.ts";
+import { RType } from "./L_Executor.ts";
+import * as L_Executor from "./L_Executor.ts";
+import { L_Scan } from "./L_Lexer.ts";
+import * as L_Parser from "./L_Parser.ts";
 
 export function runString(
   env: L_Env,

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "..";
 
 export interface EnvState {
-  value: Array<any>;
+  value: Object;
 }
 
 const initialState: EnvState = {
@@ -13,7 +13,7 @@ export const envSlice = createSlice({
   name: "env",
   initialState,
   reducers: {
-    modifyEnv: (state, action: PayloadAction<Array<any>>) => {
+    modifyEnv: (state, action: PayloadAction<Object>) => {
       state.value = action.payload;
     },
   },

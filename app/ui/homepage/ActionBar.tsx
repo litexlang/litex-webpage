@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { modifyOutput } from "@/app/lib/store/slices/outputSlice";
 import { MutableRefObject } from "react";
 import { editor } from "monaco-editor";
+import { modifyEnv } from "@/app/lib/store/slices/envSlice";
 
 export default function ActionBar({
   code,
@@ -29,7 +30,9 @@ export default function ActionBar({
   };
 
   const analyseCode = (inputCode: string) => {
-    dispatch(modifyOutput(L_runFrontend(inputCode)));
+    const runResult = L_runFrontend(inputCode);
+    dispatch(modifyOutput(runResult.result));
+    dispatch(modifyEnv(runResult.env));
   };
 
   const executeSelectedCode = () => {

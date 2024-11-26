@@ -1,9 +1,9 @@
-import { ToCheckNode, OptNode, OrNode, IfNode } from "./L_Nodes";
-import { L_Env } from "./L_Env";
-import { RType } from "./L_Executor";
-import { StoredFact } from "./L_Memory";
-import * as L_Memory from "./L_Memory";
-import { L_Builtins } from "./L_Builtins";
+import { ToCheckNode, OptNode, OrNode, IfNode } from "./L_Nodes.ts";
+import { L_Env } from "./L_Env.ts";
+import { RType } from "./L_Executor.ts";
+import { StoredFact } from "./L_Memory.ts";
+import * as L_Memory from "./L_Memory.ts";
+import { L_Builtins } from "./L_Builtins.ts";
 
 export function check(env: L_Env, toCheck: ToCheckNode): RType {
   if (toCheck instanceof OptNode) {
@@ -37,7 +37,7 @@ export function checkIfThen(env: L_Env, toCheck: IfNode): RType {
     const newEnv = new L_Env(oldEnv);
 
     for (const e of toCheck.vars) {
-      const ok = newEnv.safeNewVar(e);
+      const ok = newEnv.newVar(e);
       if (!ok) return RType.Error;
     }
 
@@ -72,172 +72,47 @@ export function checkOpt(env: L_Env, toCheck: OptNode): RType {
     return builtins(env, toCheck);
   }
 
-  const storedFacts: StoredFact[] | null = L_Memory.getStoredFacts(
-    env,
-    toCheck
-  );
-  if (storedFacts === null) {
-    env.newMessage(`check error: ${toCheck.name} not declared.`);
-    return RType.Error;
+  if (toCheck.checkVars === undefined) {
+    toCheck.checkVars = [];
   }
 
-  for (const storedFact of storedFacts) {
-    if (storedFact.isT !== toCheck.isT) continue;
+  const knowns = L_Memory.getStoredFacts(env, toCheck);
+  if (knowns === undefined) return RType.Unknown;
 
-    if (toCheck.vars.length !== storedFact.vars.length) {
-      env.newMessage(
-        `Invalid number of arguments: ${toCheck.name} need ${storedFact.vars.length}, get ${toCheck.vars.length}`
-      );
-      return RType.Error;
-    }
+  for (const known of knowns as StoredFact[]) {
+    if (known.req.length > 0) {
+      const map = new Map<string, string>();
+      if (known.isT !== toCheck.isT) continue;
 
-    if (storedFact.isNoReq()) {
-      const out = checkOptLiterally(env, toCheck);
-      if (out === RType.True) {
-        return RType.True;
-      } else if (out === RType.Error) {
-        return RType.Error;
-      } else {
-        continue;
-      }
-    }
-
-    let unknown = false;
-    const map = new Map<string, string>();
-
-    //! I GUESS THE FOLLOWING LOGIC SHOULD BE REPLACED BY COPY_WITH_MAP
-    const freeVarsOfAllLevels = storedFact.getAllFreeVars();
-    // toCheck.vars.length === storedFact.vars.length
-    for (let i = 0; i < storedFact.vars.length; i++) {
-      if (freeVarsOfAllLevels.includes(storedFact.vars[i])) {
-        const alreadyDeclared = map.get(storedFact.vars[i]);
-        if (alreadyDeclared && alreadyDeclared !== toCheck.vars[i]) {
-          env.newMessage(
-            `${storedFact.vars[i]} is signed with 2 different symbols ${alreadyDeclared}, ${toCheck.vars[i]}`
-          );
-          return RType.Error;
+      for (let i = 0; i < toCheck.checkVars.length; i++) {
+        for (let j = 0; j < toCheck.checkVars[i].length; j++) {
+          map.set(known.req[i].vars[j], toCheck.checkVars[i][j]);
         }
-
-        map.set(storedFact.vars[i], toCheck.vars[i]);
-      }
-    }
-
-    for (const currentLevelReq of storedFact.req) {
-      let newEnv = new L_Env(env);
-
-      for (const req of currentLevelReq.req) {
-        if (req instanceof OptNode) {
-          let everyVarInThisReqIsFixed = true;
-          const fixedVars: string[] = [];
-          for (const v of req.vars) {
-            const fixed = map.get(v);
-            if (fixed === undefined) {
-              everyVarInThisReqIsFixed = false;
-              fixedVars.push(v);
-              break;
-            } else {
-              fixedVars.push(fixed);
-            }
-          }
-
-          // const fixedVars = req.vars.map((e) => map.get(e)) as string[];
-          if (everyVarInThisReqIsFixed) {
-            const toCheck = new OptNode(
-              req.name,
-              fixedVars,
-              req.isT, //! Unknown whether should be true or req.isT
-              undefined
-            );
-            const out = checkOptLiterally(newEnv, toCheck);
-            if (out === RType.True) {
-              // store checked req as future stored facts.
-              L_Memory.store(newEnv, toCheck, [], true);
-              continue;
-            } else if (out === RType.Error) {
-              newEnv.getMessages().forEach((e) => newEnv.newMessage(e));
-              return RType.Error;
-            } else {
-              unknown = true;
-              break;
-            }
-          } else {
-            //! WARNING: UNKNOWN SHOULD BE THROWN HERE INSTEAD OF STORING NEW FACTS
-            // unknown = true;
-            // break;
-            // const toStore = new OptNode(req.name, fixedVars);
-            // L_Memory.store(newEnv, toStore, []);
-            const toCheck = new OptNode(
-              req.name,
-              fixedVars,
-              req.isT, //! Unknown whether should be true or req.isT
-              undefined
-            );
-            const out = checkOptLiterally(newEnv, toCheck);
-            if (out === RType.True) {
-              // store checked req as future stored facts.
-              L_Memory.store(newEnv, toCheck, [], true);
-              continue;
-            } else if (out === RType.Error) {
-              newEnv.getMessages().forEach((e) => newEnv.newMessage(e));
-              return RType.Error;
-            } else {
-              unknown = true;
-              break;
-            }
-          }
-        }
-        //! WARNING: I GUESS IF-THEN HERE IS BUGGY
-        else if (req instanceof IfNode) {
-          const newReq = req.useMapToCopy(map) as IfNode;
-
-          const out = checkIfThen(newEnv, newReq); // ? UNTESTED
-          // const out = checkOpt(newEnv, toCheck);
-          if (out === RType.True) continue;
-          else if (out === RType.Error) {
-            newEnv.getMessages().forEach((e) => env.newMessage(e));
-            return RType.Error;
-          } else {
-            unknown = true;
-            break;
-          }
-        }
-        // OrNode
-        else if (req instanceof OrNode) {
-          const newReq: ToCheckNode[] = [];
-          for (const f of req.facts) {
-            newReq.push(f.useMapToCopy(map));
-          }
-          const out = checkOr(newEnv, new OrNode(newReq, req.isT, undefined));
-          if (out === RType.True) continue;
-          else if (out === RType.Error) {
-            newEnv.getMessages().forEach((e) => env.newMessage(e));
-            return RType.Error;
-          } else {
-            unknown = true;
-            break;
-          }
-        }
-        //  else if (req instanceof ExistNode) {
-        //   const newReq: ExistNode = req.useMapToCopy(map) as ExistNode;
-
-        //   const out = checkExistInLogicReq(newEnv, newReq);
-        //   if (out === RType.True) continue;
-        //   else if (out === RType.Error) {
-        //     newEnv.getMessages().forEach((e) => env.newMessage(e));
-        //     return RType.Error;
-        //   } else {
-        //     unknown = true;
-        //     break;
-        //   }
-        // }
       }
 
-      if (unknown) break;
-      newEnv = new L_Env(newEnv);
-    }
+      const fixedKnown = known.fixStoredFact(map);
 
-    if (unknown) continue;
-    return RType.True;
+      let out = RType.True;
+
+      for (const r of fixedKnown.req as L_Memory.StoredReq[]) {
+        for (const toCheck of r.req as ToCheckNode[]) {
+          if (toCheck instanceof OptNode) {
+            out = checkOptLiterally(env, toCheck);
+            if (out !== RType.True) break;
+          } else {
+            //! NEED TO IMPLEMENT HOW TO CHECK If-Then Literally?
+            out = checkIfThen(env, toCheck as IfNode);
+            if (out !== RType.True) break;
+          }
+        }
+        if (out === RType.Unknown) break;
+      }
+
+      if (out === RType.True) return RType.True;
+    } else {
+      if (known.vars.every((e, i) => e === toCheck.vars[i])) return RType.True;
+      else continue;
+    }
   }
 
   return RType.Unknown;
@@ -245,14 +120,19 @@ export function checkOpt(env: L_Env, toCheck: OptNode): RType {
 
 // check whether a variable in fact.vars is free or fixed at check time instead of run time.
 function checkOptLiterally(env: L_Env, toCheck: OptNode): RType {
+  if (toCheck.vars.length !== env.getDefs(toCheck.name)?.vars.length) {
+    return RType.Unknown;
+  }
+
   const builtins = L_Builtins.get(toCheck.name);
   if (builtins !== undefined) {
     return builtins(env, toCheck);
   }
 
-  const facts: StoredFact[] | null = L_Memory.getStoredFacts(env, toCheck);
+  const facts = env.getKnownFactsFromCurEnv(toCheck);
+  // const facts: StoredFact[] | null = L_Memory.getStoredFacts(env, toCheck);
 
-  if (facts === null) {
+  if (facts === undefined) {
     env.newMessage(`check Error: ${toCheck.name} not declared.`);
     return RType.Error;
   }

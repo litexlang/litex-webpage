@@ -1,6 +1,6 @@
-import { L_Builtins } from "./L_Builtins";
-import { L_Env } from "./L_Env";
-import { DefNameDecl, MemorizedExistDecl } from "./L_Memory";
+import { L_Builtins } from "./L_Builtins.ts";
+import { L_Env } from "./L_Env.ts";
+import { DefNameDecl, MemorizedExistDecl } from "./L_Memory.ts";
 
 export abstract class L_Node {}
 
@@ -35,6 +35,11 @@ export class ToCheckNode extends L_Node {
     } else {
       return [new DefNameDecl(this.defName, [], [], this)];
     }
+  }
+
+  containOptAsIfThenReqOnlyIf(optName: string): boolean {
+    optName;
+    return true;
   }
 }
 
@@ -74,9 +79,24 @@ export class LogicNode extends ToCheckNode {
     public req: ToCheckNode[] = [],
     public onlyIfs: ToCheckNode[] = [],
     isT: boolean = true,
-    defName: undefined | string = undefined // public isIff: boolean = false
+    defName: undefined | string = undefined, // public isIff: boolean = false
+    public reqName: null | string = null
   ) {
     super(isT, defName);
+  }
+
+  examineVarsNotDoubleDecl(varsFromAboveIf: string[]): boolean {
+    const ok = this.vars.every((e) => !varsFromAboveIf.includes(e));
+    if (!ok) return false;
+    varsFromAboveIf = [...varsFromAboveIf, ...this.vars];
+    return this.onlyIfs.every(
+      (e) =>
+        !(e instanceof LogicNode) || e.examineVarsNotDoubleDecl(varsFromAboveIf)
+    );
+  }
+
+  override containOptAsIfThenReqOnlyIf(optName: string): boolean {
+    return this.onlyIfs.some((e) => e.containOptAsIfThenReqOnlyIf(optName));
   }
 
   override copyWithoutIsT(newIsT: boolean): LogicNode {
@@ -85,7 +105,8 @@ export class LogicNode extends ToCheckNode {
       this.req,
       this.onlyIfs,
       newIsT,
-      this.defName
+      this.defName,
+      this.reqName
       // this.isIff
     );
   }
@@ -96,7 +117,14 @@ export class LogicNode extends ToCheckNode {
     const onlyIfs = this.onlyIfs.map((e) => e.useMapToCopy(map));
 
     if (this instanceof LogicNode)
-      return new LogicNode(newVars, req, onlyIfs, this.isT, this.defName);
+      return new LogicNode(
+        newVars,
+        req,
+        onlyIfs,
+        this.isT,
+        this.defName,
+        this.reqName
+      );
 
     throw Error();
   }
@@ -174,13 +202,24 @@ export class OptNode extends ToCheckNode {
     public name: string,
     public vars: string[],
     isT: boolean = true,
-    defName: string | undefined = undefined
+    defName: string | undefined = undefined,
+    public checkVars: string[][] | undefined = undefined
   ) {
     super(isT, defName);
   }
 
+  override containOptAsIfThenReqOnlyIf(optName: string): boolean {
+    return optName === this.name;
+  }
+
   override copyWithoutIsT(newIsT: boolean): OptNode {
-    return new OptNode(this.name, this.vars, newIsT, this.defName);
+    return new OptNode(
+      this.name,
+      this.vars,
+      newIsT,
+      this.defName,
+      this.checkVars
+    );
   }
 
   override useMapToCopy(map: Map<string, string>): OptNode {
@@ -195,7 +234,13 @@ export class OptNode extends ToCheckNode {
         newVars.push(fixed);
       }
     }
-    return new OptNode(this.name, newVars, this.isT, this.defName);
+    return new OptNode(
+      this.name,
+      newVars,
+      this.isT,
+      this.defName,
+      this.checkVars
+    );
   }
 
   override toString() {
@@ -299,7 +344,8 @@ export class ExistDefNode extends DefNode {
     vars: string[] = [],
     req: ToCheckNode[] = [],
     private existVars: string[] = [],
-    private existFacts: ToCheckNode[] = []
+    private existFacts: ToCheckNode[] = [],
+    public ifVars: string[][] | undefined = undefined
   ) {
     super(name, vars, req, []); // We don't use onlyIfs field in ExistDecl.
   }
@@ -313,15 +359,17 @@ export class ExistDefNode extends DefNode {
   }
 
   getIfNode(): IfNode {
-    const itself = [new OptNode(this.name, this.vars, true, undefined)];
-    return new IfNode(this.vars, this.req, itself, true, undefined);
+    const itself = [
+      new OptNode(this.name, this.vars, true, undefined, this.ifVars),
+    ];
+    return new IfNode(this.vars, this.req, itself, true, undefined, null);
   }
 }
 
 export class KnowNode extends L_Node {
   isKnowEverything: boolean = false;
 
-  constructor(public facts: ToCheckNode[] = [], public strict: boolean) {
+  constructor(public facts: ToCheckNode[] = []) {
     super();
   }
 
@@ -333,11 +381,7 @@ export class KnowNode extends L_Node {
 }
 
 export class LetNode extends L_Node {
-  constructor(
-    public vars: string[],
-    public facts: ToCheckNode[],
-    public strict: boolean
-  ) {
+  constructor(public vars: string[], public facts: ToCheckNode[]) {
     super();
   }
 
@@ -402,5 +446,39 @@ export class HaveNode extends L_Node {
 export class SpecialNode extends L_Node {
   constructor(public keyword: string, public extra: unknown) {
     super();
+  }
+}
+
+export class UseNode extends L_Node {
+  constructor(public reqSpaceName: string, public vars: string[]) {
+    super();
+  }
+
+  override toString() {
+    return `${this.reqSpaceName}(${this.vars})`;
+  }
+}
+
+export class MacroNode extends L_Node {
+  constructor(
+    public regexString: string,
+    public varName: string,
+    public facts: ToCheckNode[]
+  ) {
+    super();
+  }
+
+  override toString() {
+    return `regex string: ${this.regexString}, var: ${this.varName}, facts: ${this.facts}`;
+  }
+
+  testRegex(testStr: string): boolean {
+    try {
+      const regex = new RegExp(this.regexString);
+      return regex.test(testStr);
+    } catch (error) {
+      console.error("Invalid Regular Expression:", error);
+      return false;
+    }
   }
 }

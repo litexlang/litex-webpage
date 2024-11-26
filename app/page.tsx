@@ -21,7 +21,7 @@ export default function Home() {
   };
 
   return (
-    <Container component={"main"} sx={{ p: 2 }} maxWidth={"xl"}>
+    <Container component={"main"} sx={{ p: 2 }} maxWidth={false}>
       <Toolbar />
       <Grid2 container columnSpacing={1}>
         <Grid2 size={2}>

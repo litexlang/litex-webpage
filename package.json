@@ -20,6 +20,7 @@
     "@mui/material": "^6.1.7",
     "@mui/material-nextjs": "^6.1.7",
     "@mui/styled-engine-sc": "^6.1.7",
+    "@mui/x-tree-view": "^7.22.1",
     "@reduxjs/toolkit": "^2.3.0",
     "dotenv": "^16.4.5",
     "fs": "^0.0.1-security",

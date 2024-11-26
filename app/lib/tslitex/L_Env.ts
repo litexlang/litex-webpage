@@ -1,37 +1,128 @@
 import {
   DefNode,
-  ToCheckNode,
-  LogicNode,
   OptNode,
   ExistDefNode,
-} from "./L_Nodes";
-import { StoredFact, StoredReq } from "./L_Memory";
-import { MemorizedExistDecl } from "./L_Memory";
+  MacroNode,
+  L_Node,
+  ToCheckNode,
+  LogicNode,
+} from "./L_Nodes.ts";
+import {
+  examineStoredFact,
+  KnownFact,
+  ReqSpace,
+  StoredFact,
+} from "./L_Memory.ts";
+import { MemorizedExistDecl } from "./L_Memory.ts";
+import { RType } from "./L_Executor.ts";
 
 export class L_Env {
   private messages: string[] = [];
   private declaredVars = new Set<string>();
 
-  private declaredFacts = new Map<string, DefNode>();
-  private storage = new Map<string, StoredFact[]>();
+  private defs = new Map<string, DefNode>();
 
   private declaredExist = new Map<string, MemorizedExistDecl>();
-  private father: L_Env | undefined = undefined;
+  private parent: L_Env | undefined = undefined;
 
-  constructor(father: L_Env | undefined = undefined) {
-    this.father = father;
+  private reqSpaces = new Map<string, ReqSpace>();
+  private macros: MacroNode[] = [];
+
+  private knownFacts = new Map<string, KnownFact>();
+
+  constructor(parent: L_Env | undefined = undefined) {
+    this.parent = parent;
   }
 
   clear() {
     this.messages = [];
     this.declaredVars = new Set<string>();
-    this.declaredFacts = new Map<string, DefNode>();
-    this.storage = new Map<string, StoredFact[]>();
+
+    this.defs = new Map<string, DefNode>();
+
     this.declaredExist = new Map<string, MemorizedExistDecl>();
-    this.father = undefined;
+    this.parent = undefined;
+
+    this.reqSpaces = new Map<string, ReqSpace>();
+    this.macros = [];
+
+    this.knownFacts = new Map<string, KnownFact>();
   }
 
-  declNewExist(decl: ExistDefNode): boolean {
+  getKnownFactsFromCurEnv(
+    opt: OptNode,
+    onlyRoot: boolean = false
+  ): undefined | StoredFact[] {
+    const knownNodeRoot = this.knownFacts.get(opt.name);
+
+    if (onlyRoot) {
+      return knownNodeRoot?.getFactsToCheck([]);
+    }
+
+    if (knownNodeRoot !== undefined) {
+      if (opt.checkVars === undefined) return knownNodeRoot.getFactsToCheck([]);
+      else {
+        const varsToCheckNumbers = opt.checkVars?.map((e) => e.length);
+        if (varsToCheckNumbers === undefined) return undefined;
+        return knownNodeRoot.getFactsToCheck(varsToCheckNumbers);
+      }
+    } else {
+      return undefined;
+    }
+  }
+
+  newKnownFact(
+    optName: string,
+    checkVars: string[][],
+    fact: StoredFact
+  ): boolean {
+    const ok = examineStoredFact(this, optName, fact);
+    if (!ok) return false;
+
+    const checkVarsNumLst = checkVars.map((e) => e.length);
+    const knownFact = this.knownFacts.get(optName);
+    if (knownFact === undefined) {
+      const newKnownFact = new KnownFact();
+      this.knownFacts.set(optName, newKnownFact);
+
+      return newKnownFact.addChild(checkVarsNumLst, fact);
+    } else {
+      return knownFact.addChild(checkVarsNumLst, fact);
+    }
+  }
+
+  getMacros(previous: MacroNode[]): MacroNode[] {
+    previous = [...previous, ...this.macros];
+    if (this.parent !== undefined) {
+      return this.parent.getMacros(previous);
+    } else {
+      return previous;
+    }
+  }
+
+  newMacro(macroNode: MacroNode) {
+    this.macros.push(macroNode);
+  }
+
+  getReqSpace(s: string): ReqSpace | undefined {
+    const out = this.reqSpaces.get(s);
+    if (out !== undefined) return out;
+    else {
+      if (this.parent) {
+        return this.parent.getReqSpace(s);
+      } else {
+        return undefined;
+      }
+    }
+  }
+
+  newReqSpace(s: string, space: ReqSpace): boolean {
+    if (this.reqSpaces.get(s)) return false;
+    this.reqSpaces.set(s, space);
+    return true;
+  }
+
+  newDeclExist(decl: ExistDefNode): boolean {
     try {
       const out = this.declaredExist.get(decl.name);
       if (out !== undefined) {
@@ -50,75 +141,54 @@ export class L_Env {
     const out = this.declaredExist.get(s);
     if (out !== undefined) return out;
     else {
-      if (this.father) {
-        return this.father.getDeclExist(s);
+      if (this.parent) {
+        return this.parent.getDeclExist(s);
       } else {
         return undefined;
       }
     }
   }
 
-  getDeclaredFact(s: string): DefNode | undefined {
-    if (this.declaredFacts.has(s)) {
-      return this.declaredFacts.get(s);
-    } else if (this.father) {
-      return this.father.getDeclaredFact(s);
+  getDefs(s: string): DefNode | undefined {
+    if (this.defs.has(s)) {
+      return this.defs.get(s);
+    } else if (this.parent) {
+      return this.parent.getDefs(s);
     } else {
       return undefined;
     }
   }
 
-  newFact(
-    name: string,
-    vars: string[],
-    req: StoredReq[],
-    isT: boolean
-  ): StoredFact {
-    const newFact = new StoredFact(vars, req, isT);
-    const out = this.storage.get(name);
-    if (!out) {
-      this.storage.set(name, [newFact]);
-    } else {
-      out.push(newFact);
-    }
-
-    return newFact;
-  }
-
-  public getStoredFactsFromCurrentEnv(s: string) {
-    return this.storage.get(s);
-  }
-
-  // Return the lowest level of environment in which an operator with given name is declared.
-  public whereIsOptDeclared(s: string): number | undefined {
-    if (this.declaredFacts.get(s)) return 0;
-
-    let curEnv: L_Env | undefined = this.father;
-    let n = 1;
-
-    while (curEnv && curEnv.declaredFacts.get(s) === undefined) {
-      n++;
-      curEnv = curEnv.father;
-    }
-
-    return curEnv?.declaredFacts.get(s) ? n : undefined;
-  }
-
-  safeDeclOpt(s: string, DefNode: DefNode): boolean {
+  newDef(s: string, DefNode: DefNode): boolean {
     // REMARK: YOU ARE NOT ALLOWED TO DECLARE A FACT TWICE AT THE SAME ENV.
-    if (this.declaredFacts.get(s) !== undefined) {
+    if (this.defs.get(s) !== undefined) {
       this.newMessage(
-        `${s} already declared in this environment or its fathers environments.`
+        `${s} already declared in this environment or its parents environments.`
       );
       return false;
     }
 
-    this.declaredFacts.set(s, DefNode);
+    this.defs.set(s, DefNode);
     this.newMessage(`[def] ${DefNode}`);
     return true;
   }
 
-  safeNewVar(fix: string): boolean {
+  // Return the lowest level of environment in which an operator with given name is declared.
+  public whereIsOptDeclared(s: string): number | undefined {
+    if (this.defs.get(s)) return 0;
+
+    let curEnv: L_Env | undefined = this.parent;
+    let n = 1;
+
+    while (curEnv && curEnv.defs.get(s) === undefined) {
+      n++;
+      curEnv = curEnv.parent;
+    }
+
+    return curEnv?.defs.get(s) ? n : undefined;
+  }
+
+  newVar(fix: string): boolean {
     if (this.declaredVars.has(fix)) {
       this.newMessage(`${fix} already declared.`);
       return false;
@@ -135,18 +205,24 @@ export class L_Env {
     if (this.declaredVars.has(key)) {
       return true;
     } else {
-      if (!this.father) return false;
-      else return this.father.varDeclared(key);
+      if (!this.parent) return false;
+      else return this.parent.varDeclared(key);
     }
   }
 
   optDeclared(key: string): boolean {
-    if (this.declaredFacts.get(key)) {
+    if (this.defs.get(key)) {
       return true;
     } else {
-      if (!this.father) return false;
-      else return this.father.optDeclared(key);
+      if (!this.parent) return false;
+      else return this.parent.optDeclared(key);
     }
+  }
+
+  returnClearMessage() {
+    const tmpMessages = [...this.messages, "\n"];
+    this.clearMessages();
+    return tmpMessages;
   }
 
   getMessages() {
@@ -157,43 +233,51 @@ export class L_Env {
     this.messages.push(s);
   }
 
-  printAllStoredFacts() {
-    console.log(`\n---Stored Facts---\n`);
-    for (const [s, v] of this.storage.entries()) {
-      console.log(`[${s}]`);
-      v?.forEach((e) => console.log(e));
-      if (v.length >= 0) console.log();
-    }
-  }
-
   printClearMessage() {
     this.messages.forEach((m) => console.log(m));
-    this.clearMessages();
-  }
-
-  returnClearMessage() {
-    const tmpMessages = [...this.messages, "\n"];
-    this.clearMessages();
-    return tmpMessages;
+    this.messages = [];
   }
 
   clearMessages() {
     this.messages = [];
   }
 
+  OKMesIntoEnvReturnRType(message: L_Node | string): RType {
+    if (message instanceof L_Node) this.newMessage(`OK! ${message}`);
+    else this.newMessage(message);
+    return RType.True;
+  }
+
+  errIntoEnvReturnRType(s: L_Node | string): RType {
+    this.newMessage(`Error: ${s}`);
+    return RType.Error;
+  }
+
   printDeclFacts() {
     console.log("\n--Declared Facts--\n");
 
-    for (const [name, declFact] of this.declaredFacts) {
+    for (const [name, declFact] of this.defs) {
       console.log(name);
       console.log(declFact);
     }
   }
 
-  getFather() {
-    return this.father;
+  getParent() {
+    return this.parent;
   }
 
+  toJSON() {
+    return {
+      vars: Array.from(this.declaredVars),
+      defs: Object.fromEntries(this.defs),
+      knowns: Object.fromEntries(this.knownFacts),
+      exists: Object.fromEntries(this.declaredExist),
+      reqSpaces: Object.fromEntries(this.reqSpaces),
+      macros: this.macros,
+    };
+  }
+
+  // used by prove to check whether vars in factToCheck is redefined in block
   someVarsDeclaredHere(fact: ToCheckNode, freeVars: string[]): boolean {
     if (fact instanceof OptNode) {
       const out = fact.vars.some(
@@ -210,9 +294,10 @@ export class L_Env {
     throw Error();
   }
 
+  // used by prove to check whether factToCheck is redefined in block
   someOptsDeclaredHere(fact: ToCheckNode): boolean {
     if (fact instanceof OptNode) {
-      return this.declaredFacts.get(fact.name) !== undefined;
+      return this.defs.get(fact.name) !== undefined;
     } else if (fact instanceof LogicNode) {
       return (
         fact.onlyIfs.some((e) => this.someOptsDeclaredHere(e)) ||
@@ -224,6 +309,6 @@ export class L_Env {
   }
 
   optDeclaredHere(name: string): boolean {
-    return this.declaredFacts.get(name) !== undefined;
+    return this.defs.get(name) !== undefined;
   }
 }

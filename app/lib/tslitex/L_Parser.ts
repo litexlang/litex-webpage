@@ -20,8 +20,10 @@ import {
   HaveNode,
   ExistNode,
   SpecialNode,
-} from "./L_Nodes";
-import { L_Env } from "./L_Env";
+  UseNode,
+  MacroNode,
+} from "./L_Nodes.ts";
+import { L_Env } from "./L_Env.ts";
 import {
   KnowTypeKeywords,
   L_Ends,
@@ -49,7 +51,9 @@ import {
   HaveKeywords,
   ClearKeyword,
   RunKeyword,
-} from "./L_Common";
+  UseKeyword,
+  MacroKeywords,
+} from "./L_Common.ts";
 
 function skip(tokens: string[], s: string | string[] = "") {
   if (typeof s === "string") {
@@ -131,6 +135,8 @@ const KeywordFunctionMap: {
   return: returnParse,
   clear: specialParse,
   run: specialParse,
+  use: useParse,
+  macro: macroParse,
 };
 
 export function getNodesFromSingleNode(
@@ -216,10 +222,10 @@ function knowParse(env: L_Env, tokens: string[]): KnowNode {
   const index = tokens.length;
 
   try {
-    const keyword = skip(tokens, KnowTypeKeywords);
-    const strict = keyword === "know" ? false : true;
+    skip(tokens, KnowTypeKeywords);
+    // const strict = keyword === "know" ? false : true;
 
-    const knowNode: KnowNode = new KnowNode([], strict);
+    const knowNode: KnowNode = new KnowNode([]);
     while (!L_Ends.includes(tokens[0])) {
       const outs = factsParse(env, tokens, [...L_Ends, ","], false, true);
       knowNode.facts = knowNode.facts.concat(outs);
@@ -256,11 +262,11 @@ function letParse(env: L_Env, tokens: string[]): LetNode {
 
     if (L_Ends.includes(tokens[0])) {
       skip(tokens, L_Ends);
-      return new LetNode(vars, [], strict);
+      return new LetNode(vars, []);
     } else {
       skip(tokens, ":");
       const facts = factsParse(env, tokens, L_Ends, true, true);
-      return new LetNode(vars, facts, strict);
+      return new LetNode(vars, facts);
     }
   } catch (error) {
     handleParseError(env, "let", index, start);
@@ -307,7 +313,20 @@ function optParseWithNot(
       name = shiftVar(tokens);
     }
 
-    return new OptNode(name, vars, isT, undefined);
+    let checkVars: string[][] | undefined = undefined;
+
+    if (isCurToken(tokens, "[")) {
+      skip(tokens, "[");
+      checkVars = [];
+      while (!isCurToken(tokens, "]")) {
+        const currentLayerVars = varLstParse(env, tokens, [";", "]"]);
+        checkVars.push(currentLayerVars);
+        if (isCurToken(tokens, ";")) skip(tokens, ";");
+      }
+      skip(tokens, "]");
+    }
+
+    return new OptNode(name, vars, isT, undefined, checkVars);
   } catch (error) {
     handleParseError(env, `${start} is invalid operator.`, index, start);
     throw error;
@@ -470,7 +489,7 @@ function optParseWithNotAre(
   env: L_Env,
   tokens: string[],
   parseNot: boolean,
-  includeDefName: boolean
+  _includeDefName: boolean
 ): OptNode[] {
   const start = tokens[0];
   const index = tokens.length;
@@ -493,14 +512,26 @@ function optParseWithNotAre(
 
       skip(tokens, ")");
 
-      let defName: undefined | string = undefined;
-      if (includeDefName && isCurToken(tokens, "[")) {
+      // let defName: undefined | string = undefined;
+      // if (includeDefName && isCurToken(tokens, "[")) {
+      //   skip(tokens, "[");
+      //   defName = shiftVar(tokens);
+      //   skip(tokens, "]");
+      // }
+
+      let checkVars: string[][] | undefined = undefined;
+      if (isCurToken(tokens, "[")) {
         skip(tokens, "[");
-        defName = shiftVar(tokens);
+        checkVars = [];
+        while (!isCurToken(tokens, "]")) {
+          const currentLayerVars = varLstParse(env, tokens, [";", "]"], false);
+          checkVars.push(currentLayerVars);
+          if (isCurToken(tokens, ";")) skip(tokens, ";");
+        }
         skip(tokens, "]");
       }
 
-      return [new OptNode(name, vars, isT, defName)];
+      return [new OptNode(name, vars, isT, undefined, checkVars)];
     } else {
       while (![...AreKeywords, ...IsKeywords].includes(tokens[0])) {
         const v = shiftVar(tokens);
@@ -516,15 +547,30 @@ function optParseWithNotAre(
       }
 
       name = shiftVar(tokens);
-      let defName: undefined | string = undefined;
-      if (includeDefName && isCurToken(tokens, "[")) {
+
+      // let defName: undefined | string = undefined;
+      // if (includeDefName && isCurToken(tokens, "[")) {
+      //   skip(tokens, "[");
+      //   defName = shiftVar(tokens);
+      //   skip(tokens, "]");
+      // }
+
+      let checkVars: string[][] | undefined = undefined;
+      if (isCurToken(tokens, "[")) {
         skip(tokens, "[");
-        defName = shiftVar(tokens);
+        checkVars = [];
+        while (!isCurToken(tokens, "]")) {
+          const currentLayerVars = varLstParse(env, tokens, [";", "]"]);
+          checkVars.push(currentLayerVars);
+          if (isCurToken(tokens, ";")) skip(tokens, ";");
+        }
         skip(tokens, "]");
       }
 
-      const outs = vars.map((e) => new OptNode(name, [e], isT, undefined));
-      outs[outs.length - 1].defName = defName;
+      const outs = vars.map(
+        (e) => new OptNode(name, [e], isT, undefined, checkVars)
+      );
+      // outs[outs.length - 1].defName = undefined;
       return outs;
     }
   } catch (error) {
@@ -564,6 +610,13 @@ function logicParse(
       req = factsParse(env, tokens, separation, true, includeDefName);
     }
 
+    let reqName: null | string = null;
+    if (isCurToken(tokens, "[")) {
+      skip(tokens, "[");
+      reqName = shiftVar(tokens);
+      skip(tokens, "]");
+    }
+
     skip(tokens, "{");
 
     const onlyIfs = factsParse(env, tokens, ["}"], true, includeDefName);
@@ -577,9 +630,9 @@ function logicParse(
     }
 
     if (IfKeywords.includes(type)) {
-      return new IfNode(vars, req, onlyIfs, true, defName);
+      return new IfNode(vars, req, onlyIfs, true, defName, reqName);
     } else if (IffKeywords.includes(type)) {
-      return new IffNode(vars, req, onlyIfs, true, defName);
+      return new IffNode(vars, req, onlyIfs, true, defName, reqName);
     }
     throw Error();
   } catch (error) {
@@ -815,6 +868,49 @@ function specialParse(env: L_Env, tokens: string[]): SpecialNode {
     }
   } catch (error) {
     handleParseError(env, "clear", index, start);
+    throw error;
+  }
+}
+
+function useParse(env: L_Env, tokens: string[]): UseNode {
+  const start = tokens[0];
+  const index = tokens.length;
+
+  try {
+    skip(tokens, UseKeyword);
+    const vars: string[] = [];
+    const reqSpaceName = shiftVar(tokens);
+
+    skip(tokens, "(");
+
+    while (!isCurToken(tokens, ")")) {
+      vars.push(shiftVar(tokens));
+      if (isCurToken(tokens, ",")) skip(tokens, ",");
+    }
+
+    skip(tokens, ")");
+
+    skip(tokens, L_Ends);
+    return new UseNode(reqSpaceName, vars);
+  } catch (error) {
+    handleParseError(env, "call", index, start);
+    throw error;
+  }
+}
+
+function macroParse(env: L_Env, tokens: string[]): MacroNode {
+  const start = tokens[0];
+  const index = tokens.length;
+
+  try {
+    skip(tokens, MacroKeywords);
+    const regexString = shiftVar(tokens);
+    const varName = shiftVar(tokens);
+    const facts = factsParse(env, tokens, L_Ends, true, true);
+
+    return new MacroNode(regexString, varName, facts);
+  } catch (error) {
+    handleParseError(env, "macro", index, start);
     throw error;
   }
 }

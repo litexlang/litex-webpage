@@ -5,23 +5,22 @@ import {
   ToCheckNode,
   DefNode,
   ProveNode,
-  // HaveNode,
-  PostfixProve,
+  // PostfixProve,
   OptNode,
   LocalEnvNode,
   ReturnNode,
-  // ReturnExistNode,
-  // ByNode,
   IfNode,
   HaveNode,
   SpecialNode,
-  // STNode,
-} from "./L_Nodes";
-import { L_Env } from "./L_Env";
-import * as L_Checker from "./L_Checker";
-import * as L_Memory from "./L_Memory";
-import { ClearKeyword, RunKeyword } from "./L_Common";
-import { runFile } from "./L_Runner";
+  UseNode,
+  MacroNode,
+  PostfixProve,
+} from "./L_Nodes.ts";
+import { L_Env } from "./L_Env.ts";
+import * as L_Checker from "./L_Checker.ts";
+import * as L_Memory from "./L_Memory.ts";
+import { ClearKeyword, RunKeyword } from "./L_Common.ts";
+import { runFile } from "./L_Runner.ts";
 
 export const DEBUG_DICT = {
   newFact: true,
@@ -47,11 +46,6 @@ export const RTypeMap: { [key in RType]: string } = {
   [RType.Unknown]: "check: unknown",
 };
 
-function successMesIntoEnv(env: L_Env, node: L_Node): RType {
-  env.newMessage(`OK! ${node.toString()}`);
-  return RType.True;
-}
-
 // deno-lint-ignore no-explicit-any
 const nodeExecMap: { [key: string]: (env: L_Env, node: any) => RType } = {
   IffDefNode: defExec,
@@ -66,22 +60,9 @@ const nodeExecMap: { [key: string]: (env: L_Env, node: any) => RType } = {
   LocalEnvNode: localEnvExec,
   ReturnNode: returnExec,
   SpecialNode: specialExec,
-  // ReturnExistNode: returnExistExec,
-  // ByNode: byExec,
-  // STNode: byExec,
+  UseNode: useExec,
+  MacroNode: macroExec,
 };
-
-function execResult(out: RType, node: L_Node): string {
-  if (out === RType.True) {
-    return `OK! ${node}`;
-  } else if (out === RType.Unknown) {
-    return `Unknown ${node}`;
-  } else if (out === RType.Error) {
-    return `Error ${node}`;
-  }
-
-  return `???`;
-}
 
 export function nodeExec(env: L_Env, node: L_Node, showMsg = true): RType {
   try {
@@ -91,13 +72,13 @@ export function nodeExec(env: L_Env, node: L_Node, showMsg = true): RType {
 
     if (execFunc) {
       const out = execFunc(env, node);
-      if (out === RType.True) return successMesIntoEnv(env, node);
+      if (out === RType.True) env.OKMesIntoEnvReturnRType(node);
     } else if (node instanceof ToCheckNode) {
       try {
         const out = factExec(env, node as ToCheckNode);
 
-        if (out === RType.True && showMsg) {
-          env.newMessage(`OK! ${node}`);
+        if (out === RType.True) {
+          if (showMsg) env.newMessage(`OK! ${node}`);
         } else if (out === RType.Unknown) {
           env.newMessage(`Unknown ${node}`);
         } else if (out === RType.Error) {
@@ -117,51 +98,11 @@ export function nodeExec(env: L_Env, node: L_Node, showMsg = true): RType {
   }
 }
 
-// function haveExec(env: L_Env, node: HaveNode): RType {
-//   try {
-//     for (const e of node.vars) {
-//       const ok = env.safeNewVar(e);
-//       if (!ok) return RType.Error;
-//     }
-
-//     for (const f of node.facts) {
-//       const ok = f.factsDeclared(env);
-//       if (!ok) {
-//         env.newMessage(`Not all of operators in ${f} are declared`);
-//         return RType.Error;
-//       }
-//     }
-
-//     for (const fact of node.facts) {
-//       if (!env.inHaves(fact.name)) {
-//         env.newMessage(`Not every existence of given fact is validated.`);
-//         return RType.Error;
-//       }
-//     }
-
-//     for (const fact of node.facts) {
-//       if (node.vars.every((e) => !fact.vars.includes(e))) {
-//         env.newMessage(`${fact} does not include any newly declared variable.`);
-//         return RType.Error;
-//       }
-//       const ok = L_Memory.store(env, fact, [], true);
-//       if (!ok) {
-//         env.newMessage(`Failed to store ${fact}`);
-//         return RType.Error;
-//       }
-//     }
-
-//     return RType.True;
-//   } catch {
-//     env.newMessage(`Error: ${node.toString()}`);
-//     return RType.Error;
-//   }
-// }
-
 function letExec(env: L_Env, node: LetNode): RType {
   try {
+    // examine whether some vars are already declared. if not, declare them.
     for (const e of node.vars) {
-      const ok = env.safeNewVar(e);
+      const ok = env.newVar(e);
       if (!ok) return RType.Error;
       else {
         if (DEBUG_DICT["let"]) {
@@ -169,7 +110,6 @@ function letExec(env: L_Env, node: LetNode): RType {
         }
       }
     }
-    // node.vars.forEach((e) => env.newVar(e, e));
 
     // examine whether all operators are declared
     for (const f of node.facts) {
@@ -180,35 +120,34 @@ function letExec(env: L_Env, node: LetNode): RType {
       }
     }
 
-    // declare defNames
-
-    // const ok = L_Memory.declDefNames(env, node.facts, true);
-    // if (!ok) {
-    //   env.newMessage(`Failed to declare new operators in ${node}`);
-    //   return RType.Error;
-    // }
-
-    // check all requirements are satisfied
-    if (!node.strict) {
-      // store facts
-      for (const f of node.facts) {
-        const ok = L_Memory.executorStoreFact(env, f, true);
-        if (!ok) {
-          env.newMessage(`Failed to store ${f}`);
-          return RType.Error;
+    // bind properties given by macro
+    for (const e of node.vars) {
+      for (const macro of env.getMacros([])) {
+        if (macro.testRegex(e)) {
+          const map = new Map<string, string>();
+          map.set(macro.varName, e);
+          const facts = macro.facts.map((e) => e.useMapToCopy(map));
+          facts.forEach((e) => L_Memory.store(env, e, [], true, true));
         }
       }
     }
 
+    // store new facts
+    for (const onlyIf of node.facts) {
+      const ok = L_Memory.store(env, onlyIf, [], false);
+      if (!ok) return RType.Error;
+    }
+
     return RType.True;
   } catch {
-    env.newMessage(`Error: ${node.toString()}`);
-    return RType.Error;
+    return env.errIntoEnvReturnRType(node);
   }
 }
 
 export function knowExec(env: L_Env, node: KnowNode): RType {
   try {
+    // examine whether all facts are declared.
+    // ! NEED TO IMPLEMENT EXAMINE ALL VARS ARE DECLARED.
     for (const f of node.facts) {
       const ok = f.factsDeclared(env);
       if (!ok) {
@@ -217,32 +156,20 @@ export function knowExec(env: L_Env, node: KnowNode): RType {
       }
     }
 
-    if (!node.strict) {
-      for (const fact of node.facts) {
-        const ok = L_Memory.executorStoreFact(env, fact, true);
-        if (!ok) {
-          env.newMessage(`Failed to store ${fact}`);
-          return RType.Error;
-        }
-      }
+    // store new knowns
+    for (const onlyIf of node.facts) {
+      const ok = L_Memory.store(env, onlyIf, [], false);
+      if (!ok) return RType.Error;
     }
 
-    // L_Memory.declDefNames(env, node.facts, false);
-
     return RType.True;
-  } catch (error) {
-    let m = `'${node.toString()}'`;
-    if (error instanceof Error) m += ` ${error.message}`;
-    env.newMessage(m);
-    throw error;
+  } catch {
+    return env.errIntoEnvReturnRType(node);
   }
 }
 
 function defExec(env: L_Env, node: DefNode): RType {
   try {
-    // let ok = env.safeDeclOpt(node.name, node);
-    // if (!ok) return RType.Error;
-
     // declare new opt
     const ok = L_Memory.declNewFact(env, node);
     if (!ok) {
@@ -250,31 +177,200 @@ function defExec(env: L_Env, node: DefNode): RType {
       return RType.Error;
     }
 
-    // store declared opt by
-    // L_Memory.storeDeclaredIfThenAsBy(env, node);
-
-    // for (const onlyIf of node.onlyIfs) {
-    //   if (onlyIf instanceof IfNode) {
-    //     const higherStoreReq = new StoredReq(node.vars, [
-    //       new OptNode(node.name, node.vars, true, undefined),
-    //       ...node.req,
-    //     ]);
-    //     const higherStoredFact = new StoredFact([], [higherStoreReq], true);
-    //     L_Memory.storeIfThenBy(env, onlyIf, higherStoredFact);
-    //   }
-    // }
-
     if (DEBUG_DICT["def"]) {
-      const decl = env.getDeclaredFact(node.name);
+      const decl = env.getDefs(node.name);
       if (!decl) return RType.Error;
     }
 
     return RType.True;
-  } catch (error) {
-    let m = `'${node.toString()}'`;
-    if (error instanceof Error) m += ` ${error.message}`;
-    env.newMessage(m);
-    throw error;
+  } catch {
+    return env.errIntoEnvReturnRType(node);
+  }
+}
+
+function factExec(env: L_Env, toCheck: ToCheckNode): RType {
+  try {
+    if (!(toCheck.varsDeclared(env, []) && toCheck.factsDeclared(env))) {
+      return RType.Error;
+    }
+
+    const out = L_Checker.check(env, toCheck);
+    if (out === RType.True) {
+      // Store Fact
+      const ok = L_Memory.executorStoreFact(env, toCheck, true);
+      if (!ok) {
+        env.newMessage(`Failed to store ${toCheck}`);
+        return RType.Error;
+      }
+    }
+
+    return out;
+  } catch {
+    env.newMessage(`failed to check ${toCheck}`);
+    return RType.Error;
+  }
+}
+
+function localEnvExec(env: L_Env, localEnvNode: LocalEnvNode): RType {
+  try {
+    const newEnv = new L_Env(env);
+    for (let i = 0; i < localEnvNode.nodes.length; i++) {
+      const out = nodeExec(newEnv, localEnvNode.nodes[i]);
+      newEnv.getMessages().forEach((e) => env.newMessage(e));
+      newEnv.clearMessages();
+      if (RType.Error === out) return RType.Error;
+    }
+
+    return RType.True;
+  } catch {
+    env.newMessage("{}");
+    return RType.Error;
+  }
+}
+
+function returnExec(env: L_Env, node: ReturnNode): RType {
+  try {
+    // for (const f of node.facts) {
+    // if (env.someOptsDeclaredHere(f)) {
+    //   env.newMessage(
+    //     `Error: Some operators in ${f} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
+    //   );
+    //   return RType.Error;
+    // }
+    // if (env.someVarsDeclaredHere(f, [])) {
+    //   env.newMessage(
+    //     `Error: Some variables in ${f} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
+    //   );
+    //   return RType.Error;
+    // }
+    // }
+
+    for (const toProve of node.facts) {
+      const out = L_Checker.check(env, toProve);
+      if (out !== RType.True) return out;
+    }
+
+    const storeTo = env.getParent();
+    if (storeTo) {
+      for (const toProve of node.facts) {
+        const ok = L_Memory.store(storeTo, toProve, [], true);
+        if (!ok) {
+          env.newMessage(`Failed to store ${toProve}`);
+          return RType.Error;
+        }
+      }
+    }
+    return RType.True;
+  } catch {
+    env.newMessage("return");
+    return RType.Error;
+  }
+}
+
+function haveExec(env: L_Env, node: HaveNode): RType {
+  try {
+    const exist = env.getDeclExist(node.opt.name);
+    if (exist === undefined) {
+      env.newMessage(`${node.opt.name} is not exist-type fact.`);
+      return RType.Error;
+    }
+
+    const out = L_Checker.check(env, node.opt);
+    if (out !== RType.True) {
+      env.newMessage(`${node} failed.`);
+      return out;
+    }
+
+    const facts = exist.instantiate(env, node.opt.vars, node.vars);
+    if (facts === undefined) {
+      return RType.Error;
+    }
+    node.vars.forEach((e) => env.newVar(e));
+    facts.forEach((e) => L_Memory.store(env, e, [], true));
+
+    return RType.True;
+  } catch {
+    env.newMessage("have");
+    return RType.Error;
+  }
+}
+
+function specialExec(env: L_Env, node: SpecialNode): RType {
+  try {
+    switch (node.keyword) {
+      case ClearKeyword:
+        env.clear();
+        return RType.True;
+      case RunKeyword: {
+        runFile(env, node.extra as string, true, false);
+        return RType.True;
+      }
+    }
+
+    return RType.Error;
+  } catch {
+    env.newMessage(`${node.keyword}`);
+    return RType.Error;
+  }
+}
+
+function useExec(env: L_Env, node: UseNode): RType {
+  try {
+    const reqSpace = env.getReqSpace(node.reqSpaceName);
+    if (reqSpace === undefined)
+      return env.errIntoEnvReturnRType(`${node.reqSpaceName} undefined.`);
+
+    const map = makeStrStrMap(env, reqSpace.ifVars, node.vars);
+    if (map === undefined) {
+      return env.errIntoEnvReturnRType(`Failed to call ${node.reqSpaceName}`);
+    }
+
+    const req = reqSpace.ifReq.map((e) => e.useMapToCopy(map));
+    const onlyIf = reqSpace.onlyIf.map((e) => e.useMapToCopy(map));
+
+    for (const r of req) {
+      const out = L_Checker.check(env, r);
+      if (out !== RType.True) return out;
+    }
+
+    for (const f of onlyIf) {
+      const ok = L_Memory.store(env, f, [], true, false);
+      if (!ok) return RType.Error;
+    }
+
+    return RType.True;
+  } catch {
+    env.newMessage(`Failed: ${node}`);
+    return RType.Error;
+  }
+}
+
+function makeStrStrMap(
+  env: L_Env,
+  keyVars: string[],
+  valueVars: string[]
+): Map<string, string> | undefined {
+  if (keyVars.length !== valueVars.length) {
+    env.newMessage(
+      `Require ${keyVars.length} elements, get ${valueVars.length}`
+    );
+    return undefined;
+  }
+
+  const out = new Map<string, string>();
+  for (let i = 0; i < keyVars.length; i++) {
+    out.set(keyVars[i], valueVars[i]);
+  }
+
+  return out;
+}
+
+function macroExec(env: L_Env, node: MacroNode): RType {
+  try {
+    env.newMacro(node);
+    return RType.True;
+  } catch {
+    return env.errIntoEnvReturnRType(`Failed: macro ${node}`);
   }
 }
 
@@ -315,7 +411,7 @@ function proveIfThen(env: L_Env, toProve: IfNode, block: L_Node[]): RType {
   try {
     const newEnv = new L_Env(env);
     for (const v of toProve.vars) {
-      const ok = newEnv.safeNewVar(v);
+      const ok = newEnv.newVar(v);
       if (!ok) throw Error();
     }
 
@@ -333,21 +429,8 @@ function proveIfThen(env: L_Env, toProve: IfNode, block: L_Node[]): RType {
       }
     }
 
-    if (newEnv.someVarsDeclaredHere(toProve, [])) {
-      newEnv.getMessages().forEach((e) => env.newMessage(e));
-      env.newMessage(
-        `Error: Some variables in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-      );
-      return RType.Error;
-    }
-
-    if (newEnv.someOptsDeclaredHere(toProve)) {
-      newEnv.getMessages().forEach((e) => env.newMessage(e));
-      env.newMessage(
-        `Error: Some operators in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-      );
-      return RType.Error;
-    }
+    const ok = examineProve(env, newEnv, toProve);
+    if (!ok) return RType.Error;
 
     for (const toCheck of toProve.onlyIfs) {
       const out = nodeExec(newEnv, toCheck, false);
@@ -365,6 +448,20 @@ function proveIfThen(env: L_Env, toProve: IfNode, block: L_Node[]): RType {
   }
 }
 
+function execResult(out: RType, node: L_Node): string {
+  if (out === RType.True) {
+    return `OK! ${node}`;
+  } else if (out === RType.Unknown) {
+    return `Unknown ${node}`;
+  } else if (out === RType.Error) {
+    return `Error ${node}`;
+  } else if (out === RType.False) {
+    return `False ${node}`;
+  }
+
+  return `???`;
+}
+
 function proveOpt(env: L_Env, toProve: OptNode, block: L_Node[]): RType {
   try {
     const newEnv = new L_Env(env);
@@ -379,21 +476,8 @@ function proveOpt(env: L_Env, toProve: OptNode, block: L_Node[]): RType {
       }
     }
 
-    if (newEnv.someVarsDeclaredHere(toProve, [])) {
-      newEnv.getMessages().forEach((e) => env.newMessage(e));
-      env.newMessage(
-        `Error: Some variables in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-      );
-      return RType.Error;
-    }
-
-    if (newEnv.someOptsDeclaredHere(toProve)) {
-      newEnv.getMessages().forEach((e) => env.newMessage(e));
-      env.newMessage(
-        `Error: Some operators in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-      );
-      return RType.Error;
-    }
+    const ok = examineProve(env, newEnv, toProve);
+    if (!ok) return RType.Error;
 
     const out = L_Checker.check(newEnv, toProve);
     if (out !== RType.True) return out;
@@ -445,21 +529,8 @@ function proveOptByContradict(
       return RType.Error;
     }
 
-    if (newEnv.someVarsDeclaredHere(toProve, [])) {
-      newEnv.getMessages().forEach((e) => env.newMessage(e));
-      env.newMessage(
-        `Error: Some variables in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-      );
-      return RType.Error;
-    }
-
-    if (newEnv.someOptsDeclaredHere(toProve)) {
-      newEnv.getMessages().forEach((e) => env.newMessage(e));
-      env.newMessage(
-        `Error: Some operators in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-      );
-      return RType.Error;
-    }
+    ok = examineProve(env, newEnv, toProve);
+    if (!ok) return RType.Error;
 
     toProve.isT = !toProve.isT;
     ok = L_Memory.store(env, toProve, [], true);
@@ -490,21 +561,8 @@ function postfixProveExec(env: L_Env, PostfixProve: PostfixProve): RType {
     }
 
     for (const fact of PostfixProve.facts) {
-      if (newEnv.someVarsDeclaredHere(fact, [])) {
-        newEnv.getMessages().forEach((e) => env.newMessage(e));
-        env.newMessage(
-          `Error: Some variables in ${fact} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-        );
-        return RType.Error;
-      }
-
-      if (newEnv.someOptsDeclaredHere(fact)) {
-        newEnv.getMessages().forEach((e) => env.newMessage(e));
-        env.newMessage(
-          `Error: Some operators in ${fact} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-        );
-        return RType.Error;
-      }
+      const ok = examineProve(env, newEnv, fact);
+      if (!ok) return RType.Error;
     }
 
     for (const fact of PostfixProve.facts) {
@@ -533,128 +591,26 @@ function postfixProveExec(env: L_Env, PostfixProve: PostfixProve): RType {
   }
 }
 
-function factExec(env: L_Env, toCheck: ToCheckNode): RType {
-  try {
-    if (!(toCheck.varsDeclared(env, []) && toCheck.factsDeclared(env))) {
-      return RType.Error;
-    }
-
-    const out = L_Checker.check(env, toCheck);
-    if (out === RType.True) {
-      // Store Fact
-      const ok = L_Memory.executorStoreFact(env, toCheck, true);
-      if (!ok) {
-        env.newMessage(`Failed to store ${toCheck}`);
-        return RType.Error;
-      }
-    }
-
-    return out;
-  } catch {
-    env.newMessage(`failed to check ${toCheck}`);
-    return RType.Error;
+function examineProve(
+  env: L_Env,
+  newEnv: L_Env,
+  toProve: ToCheckNode
+): boolean {
+  if (newEnv.someVarsDeclaredHere(toProve, [])) {
+    newEnv.getMessages().forEach((e) => env.newMessage(e));
+    env.newMessage(
+      `Error: Some variables in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
+    );
+    return false;
   }
-}
 
-function localEnvExec(env: L_Env, localEnvNode: LocalEnvNode): RType {
-  try {
-    const newEnv = new L_Env(env);
-    for (let i = 0; i < localEnvNode.nodes.length; i++) {
-      const out = nodeExec(newEnv, localEnvNode.nodes[i]);
-      newEnv.getMessages().forEach((e) => env.newMessage(e));
-      newEnv.clearMessages();
-      if (RType.Error === out) return RType.Error;
-    }
-
-    return RType.True;
-  } catch {
-    env.newMessage("{}");
-    return RType.Error;
+  if (newEnv.someOptsDeclaredHere(toProve)) {
+    newEnv.getMessages().forEach((e) => env.newMessage(e));
+    env.newMessage(
+      `Error: Some operators in ${toProve} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
+    );
+    return false;
   }
-}
 
-function returnExec(env: L_Env, node: ReturnNode): RType {
-  try {
-    for (const f of node.facts) {
-      if (env.someOptsDeclaredHere(f)) {
-        env.newMessage(
-          `Error: Some operators in ${f} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-        );
-        return RType.Error;
-      }
-      if (env.someVarsDeclaredHere(f, [])) {
-        env.newMessage(
-          `Error: Some variables in ${f} are declared in block. It's illegal to declare operator or variable with the same name in the if-then expression you want to prove.`
-        );
-        return RType.Error;
-      }
-    }
-
-    for (const toProve of node.facts) {
-      const out = L_Checker.check(env, toProve);
-      if (out !== RType.True) return out;
-    }
-
-    const storeTo = env.getFather();
-    if (storeTo) {
-      for (const toProve of node.facts) {
-        const ok = L_Memory.store(storeTo, toProve, [], true);
-        if (!ok) {
-          env.newMessage(`Failed to store ${toProve}`);
-          return RType.Error;
-        }
-      }
-    }
-    return RType.True;
-  } catch {
-    env.newMessage("return");
-    return RType.Error;
-  }
-}
-
-function haveExec(env: L_Env, node: HaveNode): RType {
-  try {
-    const exist = env.getDeclExist(node.opt.name);
-    if (exist === undefined) {
-      env.newMessage(`${node.opt.name} is not exist-type fact.`);
-      return RType.Error;
-    }
-
-    const out = L_Checker.check(env, node.opt);
-    if (out !== RType.True) {
-      env.newMessage(`${node} failed.`);
-      return out;
-    }
-
-    const facts = exist.instantiate(env, node.opt.vars, node.vars);
-    if (facts === undefined) {
-      return RType.Error;
-    }
-    node.vars.forEach((e) => env.safeNewVar(e));
-    facts.forEach((e) => L_Memory.store(env, e, [], true));
-
-    return RType.True;
-  } catch {
-    env.newMessage("have");
-    return RType.Error;
-  }
-}
-
-function specialExec(env: L_Env, node: SpecialNode): RType {
-  try {
-    switch (node.keyword) {
-      case ClearKeyword:
-        env.clear();
-        return RType.True;
-      case RunKeyword: {
-        runFile(env, node.extra as string, true, false);
-        return RType.True;
-      }
-    }
-
-    return RType.Error;
-  } catch {
-    env.newMessage(`${node.keyword}`);
-    return RType.Error;
-  }
+  return true;
 }
