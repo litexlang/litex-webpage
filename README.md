@@ -1,5 +1,21 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Install Dependences
+
+Check node version:
+
+```bash
+node -v
+```
+
+Open [https://nodejs.org/en] if you have problems on install Nodejs.
+
+Run the npm install command after installed node:
+
+```bash
+npm i
+```
+
 ## Getting Started
 
 First, run the development server:
