@@ -8,17 +8,19 @@ export default function Output() {
 
   return (
     <Box>
-      <Typography variant="subtitle2">Output</Typography>
-      {output.map((item, index) => (
-        <Box
-          key={index}
-          sx={{ bgcolor: grey[300], mb: 1, borderRadius: 1, p: 1 }}
-        >
-          <Typography variant="body2">
-            {item}
-          </Typography>
-        </Box>
-      ))}
+      <Typography variant="subtitle2" height={"32px"}>Output</Typography>
+      <Box height={"calc(100vh - 120px)"} overflow={"auto"}>
+        {output.map((item, index) => (
+          <Box
+            key={index}
+            sx={{ bgcolor: grey[300], mb: 1, borderRadius: 1, p: 1 }}
+          >
+            <Typography variant="body2">
+              {item}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 }

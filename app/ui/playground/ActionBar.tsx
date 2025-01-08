@@ -48,7 +48,7 @@ export default function ActionBar({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Typography variant="subtitle2" sx={{ flex: 1 }}>Code Space</Typography>
+      <Typography variant="subtitle2" height={"32px"} sx={{ flex: 1 }}>Code Space</Typography>
       <Tooltip arrow title={"execute all code"}>
         <IconButton
           size="small"
