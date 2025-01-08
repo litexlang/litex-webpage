@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app/lib/store/hooks";
 import { Box, Typography } from "@mui/material";
-import { grey, red } from "@mui/material/colors";
+import { grey } from "@mui/material/colors";
 
 export default function Output() {
   // redux vars
@@ -14,11 +14,9 @@ export default function Output() {
           key={index}
           sx={{ bgcolor: grey[300], mb: 1, borderRadius: 1, p: 1 }}
         >
-          {item.map((o, i) => (
-            <Typography key={i} variant="body2">
-              {o}
-            </Typography>
-          ))}
+          <Typography variant="body2">
+            {item}
+          </Typography>
         </Box>
       ))}
     </Box>

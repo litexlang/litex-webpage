@@ -2,23 +2,22 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "..";
 
 export interface OutputState {
-  value: string[][];
+  value: string[];
 }
 
 const initialState: OutputState = {
-  value: [
+  value: 
     [
       "LiTeX 0.0.1",
-      "More information about LiTeX is available at <https://github.com/malloc-realloc/tslitex>",
+      "More information about LiTeX is available at <https://github.com/litexlang/tslitex>",
     ],
-  ],
 };
 
 export const outputSlice = createSlice({
   name: "output",
   initialState,
   reducers: {
-    modifyOutput: (state, action: PayloadAction<string[][]>) => {
+    modifyOutput: (state, action: PayloadAction<string[]>) => {
       state.value = action.payload;
     },
   },

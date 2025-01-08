@@ -1,140 +1,187 @@
-import { L_Env } from "./L_Env.ts";
-import { runStrings } from "./L_Runner.ts";
+import { ExampleItem } from "./L_Structs";
+import { L_Env } from "./L_Env";
+import * as fs from "fs";
+import { runString, runStringWithLogging } from "./L_Runner";
 
-type ExampleItem = {
-  name: string;
-  code: string[];
-  debug: boolean;
-  print: boolean;
-};
-
-export const exampleList: ExampleItem[] = [
+const exampleList: ExampleItem[] = [
   {
-    name: "define subset",
+    name: "三段论",
     code: [
-      "def set(x); def subset(A,B); def in(x,A);",
-      "know if A,B: if x: in(x,A) => {in(x,B)} => {subset(A,B)};",
-      "know if A,B: subset(A,B) => {if x: in(x,A) => {in(x,B)} };",
-      "let A,B,C,D,E,F;",
-      "know subset(A,B);",
-      "let x: in(x,A);",
-      "in(x,B);", //Unknown
+      "concept something is mortal;",
+      "concept something is human; know if x: x is human  {x is mortal};",
+      "let Socrates : Socrates is human;",
+      "Socrates is  mortal;",
+      "let god :  not $mortal(god);",
+      "not $human(god);",
+      "prove_by_contradiction  not  $human(god) {god is mortal;}  god is mortal;",
+      "not $human(god);",
     ],
     debug: false,
-    print: false,
   },
   {
-    name: "reqSpace & use",
+    name: "新的parser检查",
     code: [
-      "def set(x); def subset(A,B); def in(x,A);",
-      "know if A,B: if x: in(x,A) => {in(x,B)} => {subset(A,B)};",
-      "know if A,B: subset(A,B) => [P] {if x: in(x,A) => {in(x,B)} };",
-      "let A,B,C,D,E,F;",
-      "know subset(A,B);",
-      "let x: in(x,A);",
-      "use P(A,B);",
-      "if x : in(x,A) => {in(x,B)};",
+      "concept $p(x); concept $q(x): $p(x) {$p(x)};",
+      "operator \\frac{x,y}: $p(x);",
+      "know if x: $p(x) {$q(x)};",
+      "let y: $p(y);",
+      "let_formal x: $p(x);",
+      "let_alias Y: y;",
+      "if y: $p(y) {$q(y)};",
     ],
     debug: false,
-    print: true,
   },
   {
-    name: "macro",
-    code: ["def p(x); def q(x,y);", "macro x v p(v);", "let x;", "p(x);"],
+    name: "throw error system",
+    code: ["concept $p(x); concept $q(x); concept $t(x); know $t(y);"],
     debug: false,
-    print: true,
   },
   {
-    name: "opt_with_checkVars",
+    name: "is_property",
     code: [
-      "def subset(x,y); def in (x,A); ",
-      "know if x,A,B: subset(A,B), in(x,A) => {in(x,B)}; ",
-      "let y,C,D, z: in(y,C), subset(C,D); ",
-      // "in(x,A);",
-      "in(y,D)[y,C,D];",
-      "in(z,C);",
-      "in(y,C);",
+      "concept $p(x); let x: $p(x); $is_concept(p; $p(x)); $is_concept(p; $p(z));",
     ],
     debug: false,
-    print: true,
   },
   {
-    name: "test_known",
-    code: ["def p(x);", "let y: p(y);", "know if x : => {p(x)};"],
-    debug: false,
-    print: true,
-  },
-  {
-    name: "continuous",
+    name: "is_form",
     code: [
-      "def point_wise_continuous(f,x);",
-      "def continuous(f);",
-      "def in_domain(x);",
-      "know if f: if x : in_domain(x) => {point_wise_continuous(f,x)} => {continuous(f)};",
-      "let f;",
-      "know if x : in_domain(x) => {point_wise_continuous(f,x)};",
-      "continuous(f);",
+      "concept $p(x); let x: $p(x); operator \\++{x}; let a; $is_form(\\++{a}; \\++{A}) ;",
     ],
     debug: false,
-    print: true,
   },
   {
-    name: "known if req => opt must satisfy: req does not contain if-then-type fact that has opt as onlyIf",
+    name: "checkFacts",
     code: [
-      "def p(x);",
-      "def q(x);",
-      "know if y: if x : => {p(y)} => {p(y)};",
-      "know if y: if x: => {if z: => {p(y)}} => {p(y)};",
+      "concept commutative $=(x, y); operator \\frac{x,y}; operator \\*{x,y};",
+      " know if n,x,y {\\frac{\\*{x,n}, \\*{y,n}} = \\frac{x,y} } ; ",
+      // " if n,x,y {\\frac{\\*{x,n}, \\*{y,n}} = \\frac{x,y} [n,x,y] } ;",
+      "let 1,2,3;",
+      // "[n: 1,x: \\frac{1,2}, y: \\frac{1,3}] {\\frac{\\*{x,n}, \\*{y,n}} = \\frac{x,y}}; ",
+      // "\\frac{\\*{\\frac{1,2},1}, \\*{\\frac{1,3},1}} = \\frac{\\frac{1,2},\\frac{1,3}};",
+      "[1,x: \\frac{1,2}, y: \\frac{1,3}] {\\frac{\\*{x,1}, \\*{y,1}} = \\frac{x,y}}; ",
     ],
     debug: false,
-    print: true,
   },
   {
-    name: "by and know if-then work together, not implemented",
+    name: "new if expr",
     code: [
-      "def p(x);",
-      "def q(x)",
-      "def a(x,y);",
-      "know if [P] x : p(x), if [Q] y: q(y) => {} => {if [A] p(y) => {a(x,y)}};",
-      "let v1,v2: p(v1), q(v2), p(v2);",
-      "by P(v1): by Q(v2) => {by A() => {a(v1,v2)}};",
+      `concept $=(x, y); operator \\frac{x,y}; let 1; concept $nat(x);`,
+      `if [x(a, b): \\frac{\\frac{a,1}, b}]: $nat(a) {x = \\frac{a, b}};`,
     ],
     debug: false,
-    print: true,
   },
   {
-    name: "prove 1",
+    name: "",
     code: [
-      "def p(x); def p2(x); def p3(x);",
-      "know if x: p(x) => {p2(x)}; know if x: p2(x) => {p3(x)};",
-      "prove if x: p(x) => {p3(x)} {p2(x);};",
-      "let x: p(x);",
-      "p3(x);",
+      "concept $p(x); concept $q(x,y); know if x, y: $p(x), $p(y) {$q(x,y) };",
+      "if a,b: all a,b are p {$q(a,b)} ;",
     ],
+    debug: false,
+  },
+  {
+    name: "",
+    code: [
+      `operator \\*{a,b};`,
+      "concept $real(x);",
+      `let 1,2,3;`,
+      `know all 1,2,3 are real;`,
+      "know if [n(a,b): \\*{a,b}]: a is real {n is real};",
+      "3 is real;",
+      "1 * 2 is real;",
+    ],
+    debug: false,
+  },
+  {
+    name: "",
+    code: [
+      `concept $real(x); lets nat "a|b" ;`,
+      `know nat is real;`,
+      "nat is real;",
+      "a is real;",
+    ],
+    debug: false,
+  },
+  {
+    name: "",
+    code: [
+      `concept $real(x); operator \\frac{a,b}; let x,y: x is real;`,
+      `\\frac{x,y}[0] is real;`,
+    ],
+    debug: false,
+  },
+  {
+    name: "",
+    code: [
+      `concept $real(x); operator \\frac{a,b}; let x,y: x is real;`,
+      `concept_alias 实数 real;`,
+      "x is 实数;",
+      "know if x :  x is 实数 {x is real};",
+    ],
+    debug: false,
+  },
+  {
+    name: "=",
+    code: ["let x,y; x = x; x = y;"],
+    debug: false,
+  },
+  {
+    name: "",
+    code: [
+      "concept $real(x); operator \\frac{x,y} ; ",
+      "know if [x(a,b): \\frac{a,b}]: a is real, b is real {x is real};",
+      "if [x(a,b): \\frac{a,b}]: a is real, b is real {x is real};",
+    ],
+    debug: false,
+  },
+  {
+    name: "",
+    code: [`concept $P(); concept $f(p); know if concept p: {$f(p)}; $f(P);`],
     debug: true,
-    print: true,
   },
 ];
 
-function runExamples(toJSON: boolean) {
-  const env = new L_Env();
+function runExamples(
+  logSourceCode: boolean = true,
+  logMessages: boolean = true
+) {
   for (const example of exampleList) {
+    const env = L_Env.constructWithInitialization();
     if (example.debug) {
       console.log(example.name);
-      runStrings(env, example.code, example.print);
+      for (const expr of example.code) {
+        runStringWithLogging(env, expr, logSourceCode, logMessages);
+      }
     }
   }
-  if (toJSON) envToJSON(env, "env.json");
 }
 
-runExamples(false);
+function runLiTeXFile(
+  filePath: string,
+  logSourceCode = true,
+  logMessages = true
+) {
+  try {
+    const data = fs.readFileSync(filePath, "utf8");
+    const env = new L_Env();
 
-export function envToJSON(env: L_Env, fileName: string) {
-  const out = env.toJSON();
-  // Convert the JSON object to a string and then to Uint8Array
-  const jsonString = JSON.stringify(out, null, 2);
-  const data = JSON.parse(jsonString);
-
-  Deno.writeFileSync(fileName, data);
-  return out;
+    const exprs = [data];
+    for (let i = 0; i < exprs.length; i++) {
+      const expr = exprs[i];
+      runStringWithLogging(env, expr, logSourceCode, logMessages);
+    }
+  } catch (err) {
+    console.error("Error:", err);
+  }
 }
+
+function runTest() {
+  const args = process.argv.slice(2);
+  if (!args || args.length === 0) {
+    runExamples();
+  } else {
+    runLiTeXFile(args[0]);
+  }
+}
+
+runTest();

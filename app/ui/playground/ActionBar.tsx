@@ -1,11 +1,12 @@
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
-import { L_runFrontend } from "@/app/lib/tslitex/L_Frontend";
+import { L_InteractWithFrontend } from "@/app/lib/tslitex/L_Frontend";
 import { useDispatch } from "react-redux";
 import { modifyOutput } from "@/app/lib/store/slices/outputSlice";
 import { MutableRefObject } from "react";
 import { editor } from "monaco-editor";
 import { modifyEnv } from "@/app/lib/store/slices/envSlice";
+import { L_Env } from "@/app/lib/tslitex/L_Env";
 
 export default function ActionBar({
   code,
@@ -13,8 +14,8 @@ export default function ActionBar({
 }: {
   code: string;
   editorRef:
-    | MutableRefObject<editor.IStandaloneCodeEditor>
-    | MutableRefObject<null>;
+  | MutableRefObject<editor.IStandaloneCodeEditor>
+  | MutableRefObject<null>;
 }) {
   // redux vars
   const dispatch = useDispatch();
@@ -30,8 +31,10 @@ export default function ActionBar({
   };
 
   const analyseCode = (inputCode: string) => {
-    const runResult = L_runFrontend(inputCode);
-    dispatch(modifyOutput(runResult.result));
+    const runResult = L_InteractWithFrontend(new L_Env(), inputCode);
+    console.log(runResult);
+    
+    dispatch(modifyOutput(runResult.messages));
     dispatch(modifyEnv(runResult.env));
   };
 
@@ -44,8 +47,8 @@ export default function ActionBar({
   };
 
   return (
-    <Box sx={{display: "flex"}}>
-      <Typography variant="subtitle2" sx={{flex: 1}}>Code Space</Typography>
+    <Box sx={{ display: "flex" }}>
+      <Typography variant="subtitle2" sx={{ flex: 1 }}>Code Space</Typography>
       <Tooltip arrow title={"execute all code"}>
         <IconButton
           size="small"

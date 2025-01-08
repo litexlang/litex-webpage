@@ -7,7 +7,6 @@ import CodeEditor from "../ui/playground/CodeEditor";
 import { useAppDispatch, useAppSelector } from "../lib/store/hooks";
 import { modifyCode } from "../lib/store/slices/codeSlice";
 import Output from "../ui/playground/OutPut";
-import EnvWatcher from "../ui/playground/EnvWatcher";
 
 export default function Home() {
   const editorRef = useRef(null);
@@ -24,14 +23,15 @@ export default function Home() {
     <Container component={"main"} sx={{ p: 2 }} maxWidth={false}>
       <Toolbar />
       <Grid2 container columnSpacing={1}>
-        <Grid2 size={2}>
-          <EnvWatcher />
-        </Grid2>
-        <Grid2 size={5}>
+        {/* TODO fix EnvWatcher */}
+        {/* <Grid2 size={2}> */}
+          {/* <EnvWatcher /> */}
+        {/* </Grid2> */}
+        <Grid2 size={6}>
           <ActionBar code={code} editorRef={editorRef} />
           <CodeEditor code={code} setCode={setCode} editorRef={editorRef} />
         </Grid2>
-        <Grid2 size={5}>
+        <Grid2 size={6}>
           <Output />
         </Grid2>
       </Grid2>

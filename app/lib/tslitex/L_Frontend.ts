@@ -1,30 +1,27 @@
-import { L_Scan } from "./L_Lexer.ts";
-import * as L_Executor from "./L_Executor.ts";
-import * as L_Parser from "./L_Parser.ts";
-import { L_Env } from "./L_Env.ts";
+import { eventNames } from "process";
+import { L_Env } from "./L_Env";
+import { runString } from "./L_Runner";
+import { L_Out } from "./L_Structs";
 
-export function L_runFrontend(code: string) {
-  const env = new L_Env(undefined);
-  return {
-    result: runFrontendString(env, code),
-    env: JSON.parse(JSON.stringify(env.toJSON())),
-  };
+export function L_InteractWithFrontend(
+  env: L_Env,
+  text: string
+): { env: L_Env; messages: string[] } {
+  try {
+    const outs = runString(env, text);
+    if (outs !== undefined) {
+      for (const out of outs) {
+        if (out !== L_Out.True) throw Error();
+      }
+      return { env: env, messages: env.getMessages() };
+    } else throw Error();
+  } catch {
+    return { env: env, messages: env.getMessages() };
+  }
 }
 
-export function runFrontendString(env: L_Env, expr: string): string[][] {
-  try {
-    const tokens = L_Scan(expr);
-    const nodes = L_Parser.parseUntilGivenEnd(env, tokens, null);
-    if (nodes === undefined) {
-      throw Error();
-    }
-    const result: string[][] = [];
-    for (const node of nodes) {
-      L_Executor.nodeExec(env, node);
-      result.push(env.returnClearMessage());
-    }
-    return result;
-  } catch {
-    return [["error!"]];
-  }
+function envToJSON(env: L_Env, fileName: string) {
+  const out = env.toJSON();
+  const jsonString = JSON.stringify(out, null, 2);
+  return out;
 }

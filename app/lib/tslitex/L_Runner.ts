@@ -1,71 +1,90 @@
-import { L_Env } from "./L_Env.ts";
-import { RType } from "./L_Executor.ts";
-import * as L_Executor from "./L_Executor.ts";
-import { L_Scan } from "./L_Lexer.ts";
-import * as L_Parser from "./L_Parser.ts";
+import { L_Env } from "./L_Env";
+import { L_Out } from "./L_Structs";
+import * as L_Executor from "./L_Executor";
+import * as L_Parser from "./L_Parser";
+import { L_Tokens } from "./L_Lexer";
 
-export function runString(
-  env: L_Env,
-  expr: string,
-  printResult: boolean = true,
-  printCode: boolean = true
-) {
+const printEveryThing = true;
+
+export function runString(env: L_Env, expr: string): L_Out[] | undefined {
   try {
-    if (printResult && printCode)
-      console.log(`-----\n***  source code  ***\n${expr}\n`);
-    const tokens = L_Scan(expr);
-    const nodes = L_Parser.parseUntilGivenEnd(env, tokens, null);
-    if (nodes === undefined) {
-      throw Error();
-    }
-    const result: RType[] = [];
-    for (const node of nodes) {
-      L_Executor.nodeExec(env, node);
-      if (printResult) {
-        if (printCode) console.log("***  results  ***\n");
-        env.printClearMessage();
-        console.log();
+    const tokens = new L_Tokens(expr);
+
+    while (!tokens.isEnd()) {
+      const start = tokens.curTokIndex();
+      const node = L_Parser.parseSingleNode(env, tokens);
+
+      if (node === null) {
+        continue;
+      } else {
+        const out = L_Executor.L_Exec(env, node);
+        if (out === L_Out.Error) return undefined;
       }
     }
-
-    return result;
-  } catch {
+  } catch (error) {
     env.printClearMessage();
+    if (error instanceof Error) console.log(error.message);
     return undefined;
   }
 }
 
-export function runStrings(
+export function runStringWithLogging(
   env: L_Env,
-  exprs: string[],
-  printResult: boolean = true
-) {
-  for (let i = 0; i < exprs.length; i++) {
-    const expr = exprs[i];
-    runString(env, expr, printResult);
-  }
+  expr: string,
+  logSourceCode: boolean,
+  logMessages: boolean
+): L_Out[] | undefined {
+  try {
+    const tokens = new L_Tokens(expr);
 
-  console.log("-----\nDONE!\n");
-  // env.printExists();
+    while (!tokens.isEnd()) {
+      const start = tokens.curTokIndex();
+      const node = L_Parser.parseSingleNode(env, tokens);
+
+      if (logSourceCode) {
+        console.log(tokens.sc.slice(start, tokens.curTokIndex()));
+      }
+      if (logMessages) {
+        env.printClearMessage();
+      }
+
+      if (node === null) {
+        continue;
+      } else {
+        const out = L_Executor.L_Exec(env, node);
+        if (out === L_Out.Error) {
+          if (logMessages) console.log(env.getMessages());
+          return undefined;
+        } else {
+          if (logMessages) {
+            env.printClearMessage();
+          }
+        }
+      }
+    }
+  } catch (error) {
+    env.printClearMessage();
+    if (error instanceof Error) console.log(error.message);
+    return undefined;
+  }
 }
 
-export function runFile(
+export function runFileWithLogging(
   env: L_Env,
-  fileName: string,
-  printResult: boolean = true,
-  printCode: boolean = false
-): RType[] | undefined {
+  fileName: string
+): L_Out[] | undefined {
   try {
-    const fileContent = Deno.readTextFileSync(fileName);
+    let fileContent: string = "";
+    // const fileContent = Deno.readTextFileSync(fileName);
     console.log(`Running file: ${fileName}\n`);
-    const out = runString(env, fileContent, printResult, printCode);
+    const out = runString(env, fileContent);
     console.log(`End Running file: ${fileName}\n`);
     return out;
   } catch (err) {
-    if (err instanceof Error)
+    if (err instanceof Error) {
       console.error(
         `Error: Unable to read file "${fileName}": ${err.message}\n`
       );
-    else console.error(`Error: Unable to read file ${fileName}\n`);
+    } else console.error(`Error: Unable to read file ${fileName}\n`);
   }
 }

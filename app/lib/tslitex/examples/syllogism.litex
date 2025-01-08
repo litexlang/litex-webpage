@@ -1,12 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "..";
-
-export interface CodeState {
-  value: string;
-}
-
-const initialState: CodeState = {
-  value: `/* The file contains an example of syllogism(三段论). It turns out that It just 
+/* The file contains an example of syllogism(三段论). It turns out that It just 
 takes 10% of typing(only ~10 lines) compared with using other formal languages 
 like lean4. Comparison between Lean4 and LiTeX is in litex_vs_lean4.litex .*/
 
@@ -46,21 +38,4 @@ false, which leads to contradiction.
 let god: not god is mortal;
 prove_by_contradiction not $human(god) {
   god is mortal;
-} god is mortal;`,
-};
-
-export const codeSlice = createSlice({
-  name: "code",
-  initialState,
-  reducers: {
-    modifyCode: (state, action: PayloadAction<string>) => {
-      state.value = action.payload;
-    },
-  },
-});
-
-export const { modifyCode } = codeSlice.actions;
-
-export const selectCode = (state: RootState) => state.code.value;
-
-export default codeSlice.reducer;
+} god is mortal;

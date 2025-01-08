@@ -8,10 +8,16 @@ export default function EnvWatcher() {
   // redux vars
   const env = useAppSelector((state) => state.env.value);
 
+  const watchedEnvTypes = ["concepts", "facts", "operators", "singletonVars"]
+
   useEffect(() => {
     console.log(env);
   }, [env]);
   return (
+    // concepts Map
+    // facts Map
+    // operators Map
+    // singletonVars Set
     <Box>
       <Typography variant="subtitle2">Env Watcher</Typography>
       <SimpleTreeView>
