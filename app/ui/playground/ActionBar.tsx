@@ -1,4 +1,4 @@
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
 import { L_runFrontend } from "@/app/lib/tslitex/L_Frontend";
 import { useDispatch } from "react-redux";
@@ -44,7 +44,8 @@ export default function ActionBar({
   };
 
   return (
-    <Box>
+    <Box sx={{display: "flex"}}>
+      <Typography variant="subtitle2" sx={{flex: 1}}>Code Space</Typography>
       <Tooltip arrow title={"execute all code"}>
         <IconButton
           size="small"

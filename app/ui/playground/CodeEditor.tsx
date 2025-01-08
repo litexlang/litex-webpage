@@ -10,25 +10,25 @@ export default function CodeEditor({
   code: string;
   setCode: (value: string) => void;
   editorRef:
-    | MutableRefObject<editor.IStandaloneCodeEditor>
-    | MutableRefObject<null>;
+  | MutableRefObject<editor.IStandaloneCodeEditor>
+  | MutableRefObject<null>;
 }) {
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
   };
 
   return (
-    <Editor
-      height={"calc(100vh - 88px)"}
-      value={code}
-      onChange={(value) => {
-        if (value) {
-          setCode(value);
-        } else {
-          setCode("");
-        }
-      }}
-      onMount={handleEditorDidMount}
-    />
+      <Editor
+        height={"calc(100vh - 88px)"}
+        value={code}
+        onChange={(value) => {
+          if (value) {
+            setCode(value);
+          } else {
+            setCode("");
+          }
+        }}
+        onMount={handleEditorDidMount}
+      />
   );
 }

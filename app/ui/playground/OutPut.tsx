@@ -8,6 +8,7 @@ export default function Output() {
 
   return (
     <Box>
+      <Typography variant="subtitle2">Output</Typography>
       {output.map((item, index) => (
         <Box
           key={index}
