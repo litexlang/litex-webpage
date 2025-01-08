@@ -8,8 +8,8 @@ export default function Output() {
 
   return (
     <Box>
-      <Typography variant="subtitle2" height={"32px"}>Output</Typography>
-      <Box height={"calc(100vh - 120px)"} overflow={"auto"}>
+      <Typography variant="subtitle2" lineHeight={"32px"}>Output</Typography>
+      <Box height={"calc(100vh - 120px)"} overflow={"auto"} p={1}>
         {output.map((item, index) => (
           <Box
             key={index}
