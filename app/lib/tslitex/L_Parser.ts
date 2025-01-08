@@ -694,13 +694,7 @@ function haveParse(env: L_Env, tokens: L_Tokens): null {
     // fact.tryFactVarsDeclared(env);
     FactVarsDeclaredChecker.check(env, fact);
 
-    const node = new L_Nodes.HaveNode(vars, fact);
-
-    const out = haveExec(env, node);
-
-    return out;
-
-    function haveExec(env: L_Env, node: L_Nodes.HaveNode): null {
+    const haveExec = (env: L_Env, node: L_Nodes.HaveNode): null => {
       try {
         let existSymbolNum = 0;
         for (const v of node.fact.vars) {
@@ -743,7 +737,13 @@ function haveParse(env: L_Env, tokens: L_Tokens): null {
         L_Report.L_ReportErr(env, haveExec, node);
         throw error;
       }
-    }
+    };
+
+    const node = new L_Nodes.HaveNode(vars, fact);
+
+    const out = haveExec(env, node);
+
+    return out;
   } catch (error) {
     messageParsingError(haveParse, error);
     throw error;
@@ -979,11 +979,7 @@ export function includeParse(env: L_Env, tokens: L_Tokens): null {
     skipper.skip(L_KW.L_End);
     const node = new L_Nodes.IncludeNode(path);
 
-    const out = includeExec(env, node);
-
-    return out;
-
-    function includeExec(env: L_Env, node: L_Nodes.IncludeNode): null {
+    const includeExec = (env: L_Env, node: L_Nodes.IncludeNode): null => {
       try {
         env.tryNewInclude(node.path);
         env.report(`[new lib included] ${node.toString()}`);
@@ -992,7 +988,11 @@ export function includeParse(env: L_Env, tokens: L_Tokens): null {
         L_Report.L_ReportErr(env, includeExec, node);
         return null;
       }
-    }
+    };
+
+    const out = includeExec(env, node);
+
+    return out;
   } catch (error) {
     messageParsingError(includeParse, error);
     throw error;
@@ -1122,13 +1122,7 @@ export function letAliasParse(env: L_Env, tokens: L_Tokens): null {
     );
     skipper.skip(L_KW.L_End);
 
-    const node = new L_Nodes.LetAliasNode(name, toBeAliased);
-
-    const out = letAliasExec(env, node);
-    // L_Report.reportL_Out(env, out, node);
-    return null;
-
-    function letAliasExec(env: L_Env, node: L_Nodes.LetAliasNode): null {
+    const letAliasExec=(env: L_Env, node: L_Nodes.LetAliasNode): null =>{
       try {
         // node.toBeAliased.every((e) => e.tryVarsDeclared(env));
         node.toBeAliased.every((e) => SymbolDeclaredChecker.check(env, e));
@@ -1143,6 +1137,12 @@ export function letAliasParse(env: L_Env, tokens: L_Tokens): null {
         throw error;
       }
     }
+
+    const node = new L_Nodes.LetAliasNode(name, toBeAliased);
+
+    const out = letAliasExec(env, node);
+    // L_Report.reportL_Out(env, out, node);
+    return null;
   } catch (error) {
     messageParsingError(letAliasParse, error);
     throw error;

@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "downlevelIteration": true,
     "plugins": [
       {
         "name": "next"
@@ -27,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "app/lib/theme.tsx",
-    "app/ui/AppLayout.tsx"
+    "app/ui/AppLayout.tsx",
+    "next.comfig.mjs"
   ],
   "exclude": ["node_modules"]
 }

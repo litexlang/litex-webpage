@@ -21,7 +21,7 @@ export default function EnvWatcher() {
     <Box>
       <Typography variant="subtitle2">Env Watcher</Typography>
       <SimpleTreeView>
-        {env &&
+        {/* {env &&
           Object.keys(env).map((key, index) => (
             <TreeItem itemId={"env-" + index} label={key}>
               {Array.isArray(env[key])
@@ -38,7 +38,7 @@ export default function EnvWatcher() {
                   ></TreeItem>
                 ))}
             </TreeItem>
-          ))}
+          ))} */}
       </SimpleTreeView>
 
     </Box>
