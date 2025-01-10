@@ -6,47 +6,76 @@ export interface CodeState {
 }
 
 const initialState: CodeState = {
-  value: `/* The file contains an example of syllogism(三段论). It turns out that It just 
-takes 10% of typing(only ~10 lines) compared with using other formal languages 
-like lean4. Comparison between Lean4 and LiTeX is in litex_vs_lean4.litex .*/
-
-/*
-Define a concept called "human". It takes one parameter. If it takes in a 
-variable that is known  to be human, then human(something) (you can also write 
-that as something is human, which means the same thing in LiTeX) is true. Define
-a concept called "mortal", and it takes in one parameter. Anything that has 
-property that it is human, it is mortal.
+  value: `/* LaTeX version
+Define a property called "human", which takes in one parameter.
+Define a property called "mortal", which takes in one parameter.
+Define a variable called "Socrates", which has property human.
 */
 
-concept $human(something);
-concept $mortal(something);
-know if x: $human(x) {
-  $mortal(x)
-};
-
-/*
-Introduce a variable called Socrates. It has property that it is human.
-Then I ask LiTeX interpreter whether Socrates is mortal or not.
-Since Socrates is human and anything that has property human has another
-property called mortal, "Socrates is mortal" should return true.
-Then I ask Then I ask LiTeX interpreter whether for all x, x is human, then
-x is mortal. It should also return true.
+/* Lean4 version
+variable (Human : Type)
+variable (Mortal : Human → Prop)
+variable (Socrates : Human)
 */
 
+/* LiTeX version */
+concept something is human;
+concept something is mortal;
 let Socrates: Socrates is human;
-Socrates is mortal;
+
+/* LaTeX version
+It is known fact that all human is mortal.
+Claim: Socrates is mortal.
+*/
+
+/* Lean4 version
+axiom all_humans_are_mortal : ∀ (x : Human), Mortal x
+theorem socrates_is_mortal : Mortal Socrates := by
+  apply all_humans_are_mortal
+#check socrates_is_mortal
+*/
+
+/* LiTeX version */
+know if x: x is human {
+  x is mortal
+};
+Socrates is mortal; 
+
+/* LaTeX version
+Claim: all human is mortal.
+*/
+
+/* Lean4 version
+def all_humans_will_die : Prop := ∀ (x : Human), Mortal x
+theorem prove_all_humans_will_die : all_humans_will_die := all_humans_are_mortal
+*/
+
+/* LiTeX version */
 if x: x is human {x is mortal};
 
-/*
-Introduce a variable called god. It has property that it is not mortal.
-Then prove by contradiction, it is not human. The procedure of that proof is,
-suppose god is human, then god is mortal, then god is mortal is both true and 
-false, which leads to contradiction.
+/* LaTeX version
+Define a variable called "god", it has property that it is not mortal.
+Prove by contradiction: god is not human.
 */
+
+/* Lean4 version
+#check prove_all_humans_will_die
+variable (God : Type)
+variable (god : God)
+axiom god_is_immortal : ¬ Mortal God
+theorem god_is_not_human : God ≠ Human :=
+  by
+  intro h
+  have god_is_mortal : Mortal God := all_humans_are_mortal god,
+  contradiction
+*/
+
+/* LiTeX version */
 let god: not god is mortal;
-prove_by_contradiction not $human(god) {
+prove_by_contradiction not god is human {
   god is mortal;
-} god is mortal;`,
+}  god is human;
+not god is human;`,
 };
 
 export const codeSlice = createSlice({
