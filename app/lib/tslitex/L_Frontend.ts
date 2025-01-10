@@ -1,4 +1,3 @@
-import { eventNames } from "process";
 import { L_Env } from "./L_Env";
 import { runString } from "./L_Runner";
 import { L_Out } from "./L_Structs";
@@ -18,10 +17,4 @@ export function L_InteractWithFrontend(
   } catch {
     return { env: env, messages: env.getMessages() };
   }
-}
-
-function envToJSON(env: L_Env, fileName: string) {
-  const out = env.toJSON();
-  const jsonString = JSON.stringify(out, null, 2);
-  return out;
 }

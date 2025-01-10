@@ -75,6 +75,7 @@ export function runFileWithLogging(
 ): L_Out[] | undefined {
   try {
     let fileContent: string = "";
+    // fs.writeFileSync(fileName, fileContent, "utf8");
     // const fileContent = Deno.readTextFileSync(fileName);
     console.log(`Running file: ${fileName}\n`);
     const out = runString(env, fileContent);
