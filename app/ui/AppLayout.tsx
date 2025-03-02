@@ -51,7 +51,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 startIcon={route.icon}
                 endIcon={route.path.indexOf("http") === 0 && <OpenInNew />}
                 color="inherit"
-                sx={{ mx: 1 }}
+                sx={{ mx: 0.5 }}
               >
                 {route.title}
               </Button>
