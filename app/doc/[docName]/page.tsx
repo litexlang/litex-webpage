@@ -13,7 +13,6 @@ export default function Doc({ params }: { params: { docName: string } }) {
     // state vars
     const [menuTree, setMenuTree] = useState([])
     const [docId, setDocId] = useState("")
-    const [content, setContent] = useState("## loading...")
 
     const getFirstDocId = (menuTree: Array<any>) => {
         if (menuTree[0].children) {
@@ -34,25 +33,14 @@ export default function Doc({ params }: { params: { docName: string } }) {
         });
     }
 
-    const contentInit = () => {
-        fetch("/api/content?" + new URLSearchParams({ docId })).then((resp) => {
-            if (resp.status === 200) {
-                resp.json().then((json) => {
-                    setContent(json.data);
-                });
-            }
-        });
-    }
-
     useEffect(() => { if (docName) menuTreeInit() }, [docName])
-    useEffect(() => { if (docId) contentInit() }, [docId])
 
     return (
         <Container component={"main"} sx={{ p: 2 }} maxWidth={false}>
             <Toolbar />
             <Box display={"flex"}>
                 <MenuTree menuTree={menuTree} width={240} docId={docId} setDocId={setDocId} />
-                <Content content={content} />
+                <Content docId={docId} />
             </Box>
         </Container>
     );
