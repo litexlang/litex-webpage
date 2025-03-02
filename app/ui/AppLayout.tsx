@@ -33,7 +33,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <AppBar elevation={0} color="default">
         <Toolbar>
           <Box flex={1}>
-            <Image src={logo} alt="" width={36} height={36} />
+            <Link href={"/"}>
+              <Image src={logo} alt="" width={36} height={36} />
+            </Link>
           </Box>
           {routes && routes.map((route, index) => (
             <Link
