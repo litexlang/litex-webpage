@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/app/lib/store/hooks";
+import { useAppSelector } from "@/app/lib/browser/store/hooks";
 import { useEffect } from "react";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";

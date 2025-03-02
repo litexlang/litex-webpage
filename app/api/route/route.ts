@@ -1,4 +1,4 @@
-import { docRouteLoader } from "@/script/docLoader";
+import { docRouteLoader } from "@/app/lib/server/docLoader";
 import { NextResponse } from "next/server";
 
 export const GET = async () => {

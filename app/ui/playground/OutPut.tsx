@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/app/lib/store/hooks";
+import { useAppSelector } from "@/app/lib/browser/store/hooks";
 import { Box, Typography } from "@mui/material";
 import { grey } from "@mui/material/colors";
 

@@ -1,13 +1,13 @@
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
-import { L_InteractWithFrontend } from "@/app/lib/tslitex/L_Frontend";
+import { L_InteractWithFrontend } from "@/app/lib/browser/tslitex/L_Frontend";
 import { useDispatch } from "react-redux";
-import { modifyOutput } from "@/app/lib/store/slices/outputSlice";
+import { modifyOutput } from "@/app/lib/browser/store/slices/outputSlice";
 import { MutableRefObject } from "react";
 import { editor } from "monaco-editor";
-import { modifyEnv } from "@/app/lib/store/slices/envSlice";
-import { L_Env } from "@/app/lib/tslitex/L_Env";
-import { modifyCode } from "@/app/lib/store/slices/codeSlice";
+import { modifyEnv } from "@/app/lib/browser/store/slices/envSlice";
+import { L_Env } from "@/app/lib/browser/tslitex/L_Env";
+import { modifyCode } from "@/app/lib/browser/store/slices/codeSlice";
 
 export default function ActionBar({
   code,

@@ -1,4 +1,4 @@
-import { menuTreeLoader } from "@/script/docLoader";
+import { menuTreeLoader } from "@/app/lib/server/docLoader";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (request: NextRequest) => {

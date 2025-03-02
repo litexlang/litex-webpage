@@ -4,8 +4,8 @@ import { Container, Grid2, Toolbar, Typography } from "@mui/material";
 import ActionBar from "../ui/playground/ActionBar";
 import { useRef } from "react";
 import CodeEditor from "../ui/playground/CodeEditor";
-import { useAppDispatch, useAppSelector } from "../lib/store/hooks";
-import { modifyCode } from "../lib/store/slices/codeSlice";
+import { useAppDispatch, useAppSelector } from "../lib/browser/store/hooks";
+import { modifyCode } from "../lib/browser/store/slices/codeSlice";
 import Output from "../ui/playground/OutPut";
 
 export default function Home() {
