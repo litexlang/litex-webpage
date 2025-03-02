@@ -4,7 +4,9 @@ export function docRouteLoader() {
     const direntList = readdirSync(process.env.DOC_DIR, { withFileTypes: true })
     let docRouteList: Array<any> = []
     direntList.forEach((dirent) => {
-        docRouteList.push({ title: dirent.name.replace(".md", ""), path: "/doc/" + dirent.name.replace(".md", "") })
+        if (dirent.isDirectory()) {
+            docRouteList.push({ title: dirent.name.replace(".md", ""), path: "/doc/" + dirent.name.replace(".md", "") })
+        }
     })
     return docRouteList;
 }
