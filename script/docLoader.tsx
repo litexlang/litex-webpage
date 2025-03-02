@@ -1,11 +1,15 @@
 import { readdirSync, readFileSync } from "fs";
 
-export function rootDirLoader() {
-    return readdirSync(process.env.DOC_DIR, { withFileTypes: true });
+export function docRouteLoader() {
+    const direntList = readdirSync(process.env.DOC_DIR, { withFileTypes: true })
+    let docRouteList: Array<any> = []
+    direntList.forEach((dirent) => {
+        docRouteList.push({ title: dirent.name.replace(".md", ""), path: "/doc/" + dirent.name })
+    })
+    return docRouteList;
 }
 
 export function menuTreeLoader(path: string, menuTree: Array<any> = []) {
-    console.log(path);
     const direntList = readdirSync(path, { withFileTypes: true })
     direntList.forEach((dirent) => {
         const fullpath = dirent.path + '/' + dirent.name
