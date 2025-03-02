@@ -13,7 +13,7 @@ export default function MenuTree({
     setDocId: Function
 }) {
     return (
-        <Box width={width} height={"calc(100vh - 96px)"} mr={3}>
+        <Box width={width} height={"calc(100vh - 96px)"} mr={3} overflow={"auto"}>
             <RichTreeView items={menuTree} selectedItems={docId} onItemClick={(event, docId) => { if (docId.lastIndexOf(".md") === docId.length - 3) setDocId(docId) }} />
         </Box>
     );

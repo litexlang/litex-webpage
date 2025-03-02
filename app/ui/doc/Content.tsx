@@ -1,5 +1,4 @@
 import LitexRenderer from "@/app/lib/server/LitexRenderer";
-import { Box } from "@mui/material";
 import { Marked } from "@ts-stack/markdown";
 import { useEffect, useState } from "react";
 

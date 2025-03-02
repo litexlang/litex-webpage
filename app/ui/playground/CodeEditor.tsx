@@ -19,7 +19,7 @@ export default function CodeEditor({
 
   return (
       <Editor
-        height={"calc(100vh - 120px)"}
+        height={100}
         value={code}
         onChange={(value) => {
           if (value) {

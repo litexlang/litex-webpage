@@ -9,7 +9,7 @@ export default function Output() {
   return (
     <Box>
       <Typography variant="subtitle2" lineHeight={"32px"}>Output</Typography>
-      <Box height={"calc(100vh - 120px)"} overflow={"auto"} p={1}>
+      <Box height={100} overflow={"auto"} p={1}>
         {output.map((item, index) => (
           <Box
             key={index}
