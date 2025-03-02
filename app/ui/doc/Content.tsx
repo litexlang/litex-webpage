@@ -10,7 +10,7 @@ export default function Content({
 }) {
 
     // state vars
-    const [content, setContent] = useState("## loading...")
+    const [content, setContent] = useState("loading...")
 
     const contentInit = () => {
         fetch("/api/content?" + new URLSearchParams({ docId })).then((resp) => {
