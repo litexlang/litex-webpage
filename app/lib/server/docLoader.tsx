@@ -4,7 +4,7 @@ export function docRouteLoader() {
     const direntList = readdirSync(process.env.DOC_DIR, { withFileTypes: true })
     let docRouteList: Array<any> = []
     direntList.forEach((dirent) => {
-        docRouteList.push({ title: dirent.name.replace(".md", ""), path: "/doc/" + dirent.name })
+        docRouteList.push({ title: dirent.name.replace(".md", ""), path: "/doc/" + dirent.name.replace(".md", "") })
     })
     return docRouteList;
 }
@@ -14,9 +14,9 @@ export function menuTreeLoader(path: string, menuTree: Array<any> = []) {
     direntList.forEach((dirent) => {
         const fullpath = dirent.path + '/' + dirent.name
         if (dirent.isDirectory()) {
-            menuTree.push({ id: fullpath, label: dirent.name, children: menuTreeLoader(fullpath) })
+            menuTree.push({ id: fullpath.replace(process.env.DOC_DIR, ""), label: dirent.name, children: menuTreeLoader(fullpath) })
         } else {
-            menuTree.push({ id: fullpath, label: dirent.name })
+            menuTree.push({ id: fullpath.replace(process.env.DOC_DIR, ""), label: dirent.name })
         }
     })
     return menuTree;

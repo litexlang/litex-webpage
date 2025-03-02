@@ -1,12 +1,12 @@
-import { menuTreeLoader } from "@/app/lib/server/docLoader";
+import { docReader } from "@/app/lib/server/docLoader";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (request: NextRequest) => {
   const requestParams = request.nextUrl.searchParams;
-  const docName = requestParams.get("docName");
-  if (docName) {
+  const docId = requestParams.get("docId");
+  if (docId) {
     return NextResponse.json(
-      { data: menuTreeLoader(process.env.DOC_DIR + docName) },
+      { data: docReader(process.env.DOC_DIR + docId) },
       { status: 200 }
     );
   } else {
