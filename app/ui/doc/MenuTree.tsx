@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Drawer, Toolbar } from "@mui/material";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 
 export default function MenuTree({
@@ -13,8 +13,9 @@ export default function MenuTree({
     setDocId: Function
 }) {
     return (
-        <Box width={width} height={"calc(100vh - 96px)"} mr={3} overflow={"auto"}>
+        <Drawer variant="permanent" sx={{ width: width, zIndex: (theme) => theme.zIndex.appBar - 1 }} PaperProps={{ sx: { width: width, p: 2 } }}>
+            <Toolbar />
             <RichTreeView items={menuTree} selectedItems={docId} onItemClick={(event, docId) => { if (docId.lastIndexOf(".md") === docId.length - 3) setDocId(docId) }} />
-        </Box>
+        </Drawer>
     );
 }
