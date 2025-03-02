@@ -23,10 +23,6 @@ export default function Home() {
     <Container component={"main"} sx={{ p: 2 }} maxWidth={false}>
       <Toolbar />
       <Grid2 container columnSpacing={1}>
-        {/* TODO fix EnvWatcher */}
-        {/* <Grid2 size={2}> */}
-          {/* <EnvWatcher /> */}
-        {/* </Grid2> */}
         <Grid2 size={6}>
           <ActionBar code={code} editorRef={editorRef} />
           <CodeEditor code={code} setCode={setCode} editorRef={editorRef} />
