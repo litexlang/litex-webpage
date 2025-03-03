@@ -1,15 +1,12 @@
-import { useAppSelector } from "@/app/lib/browser/store/hooks";
 import { Box, Typography } from "@mui/material";
 import { grey } from "@mui/material/colors";
 
-export default function Output() {
-  // redux vars
-  const output = useAppSelector((state) => state.output.value);
+export default function Output({ output, height }: { output: string[], height: string | number }) {
 
   return (
     <Box>
       <Typography variant="subtitle2" lineHeight={"32px"}>Output</Typography>
-      <Box height={100} overflow={"auto"} p={1}>
+      <Box height={height} overflow={"auto"} p={1}>
         {output.map((item, index) => (
           <Box
             key={index}

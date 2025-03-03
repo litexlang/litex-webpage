@@ -1,6 +1,7 @@
-import LitexRenderer from "@/app/lib/server/LitexRenderer";
-import { Marked } from "@ts-stack/markdown";
+import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
+import Markdown from "react-markdown";
+import Playground from "../playground";
 
 export default function Content({
     docId
@@ -23,7 +24,14 @@ export default function Content({
 
     useEffect(() => { if (docId) contentInit() }, [docId])
 
-    Marked.setOptions({ renderer: new LitexRenderer })
-
-    return <div dangerouslySetInnerHTML={{ __html: Marked.parse(content) }} />
+    return (
+        <Box>
+            <Markdown children={content} components={{
+                code({ children, className, ...rest }) {
+                    const match = /language-(\w+)/.exec(className || '')
+                    return match ? <Playground height={300} initCode={String(children)} /> : <code {...rest} className={className}>{children}</code>
+                }
+            }} />
+        </Box>
+    )
 }

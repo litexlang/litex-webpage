@@ -10,7 +10,7 @@ export default function MenuTree({
     menuTree: Array<any>,
     width: number,
     docId: string
-    setDocId: Function
+    setDocId: (value: string) => void
 }) {
     return (
         <Drawer variant="permanent" sx={{ width: width, zIndex: (theme) => theme.zIndex.appBar - 1 }} PaperProps={{ sx: { width: width, p: 2 } }}>

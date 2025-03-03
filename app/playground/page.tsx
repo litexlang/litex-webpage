@@ -1,36 +1,18 @@
 "use client";
 
-import { Container, Grid2, Toolbar, Typography } from "@mui/material";
-import ActionBar from "../ui/playground/ActionBar";
-import { useRef } from "react";
-import CodeEditor from "../ui/playground/CodeEditor";
+import { Container, Toolbar } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../lib/browser/store/hooks";
-import { modifyCode } from "../lib/browser/store/slices/codeSlice";
-import Output from "../ui/playground/OutPut";
+import Playground from "../ui/playground";
 
 export default function Home() {
-  const editorRef = useRef(null);
 
   // redux vars
   const code = useAppSelector((state) => state.code.value);
-  const dispatch = useAppDispatch();
-
-  const setCode = (value: string) => {
-    dispatch(modifyCode(value));
-  };
 
   return (
     <Container component={"main"} sx={{ p: 2 }} maxWidth={false}>
       <Toolbar />
-      <Grid2 container columnSpacing={1}>
-        <Grid2 size={6}>
-          <ActionBar code={code} editorRef={editorRef} />
-          <CodeEditor code={code} setCode={setCode} editorRef={editorRef} />
-        </Grid2>
-        <Grid2 size={6}>
-          <Output />
-        </Grid2>
-      </Grid2>
+      <Playground height={'calc(100vh - 160px)'} initCode={code} />
     </Container>
   );
 }
