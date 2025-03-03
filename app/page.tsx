@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container, Toolbar, Typography } from "@mui/material";
+import { Box, Container, Toolbar } from "@mui/material";
 import Image from "next/image";
 import logo from "./ui/homepage/logo.png"
 import Content from "./ui/doc/Content";

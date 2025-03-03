@@ -14,7 +14,7 @@ export default function Doc({ params }: { params: { docName: string } }) {
     const [menuTree, setMenuTree] = useState([])
     const [docId, setDocId] = useState("")
 
-    const getFirstDocId = (menuTree: Array<any>) => {
+    const getFirstDocId = (menuTree: Array<{ id: string, label: string, children?: Array<any> }>) => {
         if (menuTree[0].children) {
             return getFirstDocId(menuTree[0].children)
         } else {

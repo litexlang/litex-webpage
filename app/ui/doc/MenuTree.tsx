@@ -1,3 +1,4 @@
+import { menuTreeObj } from "@/app/lib/server/docLoader";
 import { Drawer, Toolbar } from "@mui/material";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 
@@ -7,7 +8,7 @@ export default function MenuTree({
     docId,
     setDocId
 }: {
-    menuTree: Array<any>,
+    menuTree: Array<menuTreeObj>
     width: number,
     docId: string
     setDocId: (value: string) => void
