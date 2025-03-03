@@ -1,10 +1,11 @@
-import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
 import { L_InteractWithFrontend } from "@/app/lib/browser/tslitex/L_Frontend";
 import { MutableRefObject } from "react";
 import { editor } from "monaco-editor";
 import { L_Env } from "@/app/lib/browser/tslitex/L_Env";
 
+// TODO
 export default function ActionBar({
   code,
   editorRef,
@@ -28,6 +29,7 @@ export default function ActionBar({
 
   const analyseCode = (inputCode: string) => {
     const runResult = L_InteractWithFrontend(new L_Env(), inputCode);
+    setOutput(runResult.messages)
   };
 
   const executeSelectedCode = () => {
@@ -40,7 +42,6 @@ export default function ActionBar({
 
   return (
     <Box display={"flex"}>
-      <Typography variant="subtitle2" lineHeight={"32px"} sx={{ flex: 1}}>Code Space</Typography>
       <Tooltip arrow title={"execute all code"}>
         <IconButton
           size="small"

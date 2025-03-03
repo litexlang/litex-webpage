@@ -5,7 +5,6 @@ export default function Output({ output, height }: { output: string[], height: s
 
   return (
     <Box>
-      <Typography variant="subtitle2" lineHeight={"32px"}>Output</Typography>
       <Box height={height} overflow={"auto"} p={1}>
         {output.map((item, index) => (
           <Box

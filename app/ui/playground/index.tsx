@@ -13,10 +13,12 @@ export default function Playground({ height, initCode }: { height: string | numb
     const [output, setOutput] = useState(["LiTeX 0.0.1", "More information about LiTeX is available at <https://github.com/litexlang/tslitex>"])
 
     return (
-        <Box border={2} borderRadius={2} px={1} my={2}>
+        <Box border={2} borderRadius={2} px={1} py={0.5} my={2}>
             <Grid2 container columnSpacing={1}>
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                     <ActionBar code={code} editorRef={editorRef} setOutput={setOutput} />
+                </Grid2>
+                <Grid2 size={6}>
                     <CodeEditor code={code} setCode={setCode} editorRef={editorRef} height={height} />
                 </Grid2>
                 <Grid2 size={6}>
