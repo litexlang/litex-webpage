@@ -1,5 +1,6 @@
 "use client";
 
+import { menuTreeObj } from "@/app/lib/server/docLoader";
 import Content from "@/app/ui/doc/Content";
 import MenuTree from "@/app/ui/doc/MenuTree";
 import { Box, Container, Toolbar } from "@mui/material";
@@ -14,7 +15,7 @@ export default function Doc({ params }: { params: { docName: string } }) {
     const [menuTree, setMenuTree] = useState([])
     const [docId, setDocId] = useState("")
 
-    const getFirstDocId = (menuTree: Array<{ id: string, label: string, children?: Array<any> }>) => {
+    const getFirstDocId = (menuTree: Array<menuTreeObj>) => {
         if (menuTree[0].children) {
             return getFirstDocId(menuTree[0].children)
         } else {

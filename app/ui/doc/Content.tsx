@@ -28,7 +28,7 @@ export default function Content({
         <Container maxWidth={"xl"}>
             <Markdown children={content} components={{
                 code({ children, className, ...rest }) {
-                    const match = /language-(\w+)/.exec(className || '')
+                    const match = /language-litex/.exec(className || '')
                     return match ? <Playground height={300} initCode={String(children)} /> : <code {...rest} className={className}>{children}</code>
                 }
             }} />

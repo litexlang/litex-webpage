@@ -1,9 +1,7 @@
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
-import { L_InteractWithFrontend } from "@/app/lib/browser/tslitex/L_Frontend";
 import { MutableRefObject } from "react";
 import { editor } from "monaco-editor";
-import { L_Env } from "@/app/lib/browser/tslitex/L_Env";
 
 // TODO
 export default function ActionBar({
@@ -28,8 +26,8 @@ export default function ActionBar({
   };
 
   const analyseCode = (inputCode: string) => {
-    const runResult = L_InteractWithFrontend(new L_Env(), inputCode);
-    setOutput(runResult.messages)
+    console.log(inputCode);
+    setOutput(["[developing] Coming soon..."])
   };
 
   const executeSelectedCode = () => {
