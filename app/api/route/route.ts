@@ -1,6 +1,8 @@
 import { docRouteLoader } from "@/app/lib/server/docLoader";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export const GET = async () => {
   const routeList = docRouteLoader();
   routeList.push(

@@ -1,6 +1,8 @@
 import { menuTreeLoader } from "@/app/lib/server/docLoader";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export const GET = async (request: NextRequest) => {
   const requestParams = request.nextUrl.searchParams;
   const docName = requestParams.get("docName");
