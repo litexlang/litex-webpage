@@ -16,7 +16,7 @@ export default function Playground({ height, initCode }: { height: string | numb
         <Box border={2} borderRadius={2} px={1} py={0.5} my={2}>
             <Grid2 container columnSpacing={1}>
                 <Grid2 size={12}>
-                    <ActionBar code={code} editorRef={editorRef} setOutput={setOutput} />
+                    <ActionBar code={code} setCode={setCode} editorRef={editorRef} setOutput={setOutput} />
                 </Grid2>
                 <Grid2 size={6}>
                     <CodeEditor code={code} setCode={setCode} editorRef={editorRef} height={height} />
