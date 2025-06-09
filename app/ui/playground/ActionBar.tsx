@@ -78,7 +78,7 @@ export default function ActionBar({
       </Tooltip>
       <Box flex={1} />
       {litexExamples.map((example) => (
-        <Typography variant="caption" mx={1} alignContent="center" sx={{ cursor: "pointer" }} color={blue[500]} onClick={() => { setCode(example.code) }}>{example.title}</Typography>
+        <Typography key={example.title} variant="caption" mx={1} alignContent="center" sx={{ cursor: "pointer" }} color={blue[500]} onClick={() => { setCode(example.code) }}>{example.title}</Typography>
       ))}
     </Box>
   );
