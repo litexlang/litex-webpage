@@ -10,7 +10,7 @@ export default function Playground({ height, initCode }: { height: string | numb
 
     // state vars
     const [code, setCode] = useState(initCode)
-    const [output, setOutput] = useState(["LiTeX 0.0.1", "More information about LiTeX is available at <https://github.com/litexlang/tslitex>"])
+    const [output, setOutput] = useState(["LiTeX 0.1.3", "More information about LiTeX is available at <https://github.com/litexlang/golitex>"])
 
     return (
         <Box border={2} borderRadius={2} px={1} py={0.5} my={2}>

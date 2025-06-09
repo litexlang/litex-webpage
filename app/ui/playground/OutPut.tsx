@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { grey } from "@mui/material/colors";
+import { green, grey } from "@mui/material/colors";
 
 export default function Output({ output, height }: { output: string[], height: string | number }) {
 
@@ -9,7 +9,7 @@ export default function Output({ output, height }: { output: string[], height: s
         {output.map((item, index) => (
           <Box
             key={index}
-            sx={{ bgcolor: grey[300], mb: 1, borderRadius: 1, p: 1 }}
+            sx={item.indexOf(":)") >= 0 ? { bgcolor: green[300], mb: 1, borderRadius: 1, p: 1 } : { bgcolor: grey[300], mb: 1, borderRadius: 1, p: 1 }}
           >
             <Typography variant="body2">
               {item}

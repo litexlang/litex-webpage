@@ -8,7 +8,7 @@ export const GET = async () => {
   routeList.push(
     {
       title: "Playground",
-      path: "https://litexlang.org:3000/lab",
+      path: "/playground",
     },
     {
       title: "Github",

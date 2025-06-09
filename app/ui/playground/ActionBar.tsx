@@ -26,8 +26,20 @@ export default function ActionBar({
   };
 
   const analyseCode = (inputCode: string) => {
-    console.log(inputCode);
-    setOutput(["[developing] Coming soon..."])
+    fetch("/api/litex", {
+      method: "POST",
+      body: JSON.stringify({ "litexString": inputCode }),
+    }).then((resp) => {
+      if (resp.status === 200) {
+        resp.json().then((json) => {
+          setOutput(json.data);
+        });
+      } else {
+        setOutput(["[Server Error] Try later..."])
+      }
+    }).catch(() => {
+      setOutput(["[Network Error] Try later..."])
+    });
   };
 
   const executeSelectedCode = () => {
