@@ -16,7 +16,7 @@ export default function MenuTree({
     return (
         <Drawer variant="permanent" sx={{ width: width, zIndex: (theme) => theme.zIndex.appBar - 1 }} PaperProps={{ sx: { width: width, p: 2 } }}>
             <Toolbar />
-            <RichTreeView items={menuTree} selectedItems={docId} onItemClick={(event, docId) => { if (docId.lastIndexOf(".md") === docId.length - 3) setDocId(docId) }} />
+            <RichTreeView items={menuTree} selectedItems={docId} sx={{ overflow: "hidden", textOverflow: "ellipsis" }} onItemClick={(event, docId) => { if (docId.lastIndexOf(".md") === docId.length - 3) setDocId(docId) }} />
         </Drawer>
     );
 }
