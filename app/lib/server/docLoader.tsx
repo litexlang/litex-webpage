@@ -22,7 +22,7 @@ export function menuTreeLoader(path: string, menuTree: Array<menuTreeObj> = []) 
         if (dirent.isDirectory()) {
             menuTree.push({ id: fullpath.replace(process.env.DOC_DIR, ""), label: dirent.name, children: menuTreeLoader(fullpath) })
         } else {
-            menuTree.push({ id: fullpath.replace(process.env.DOC_DIR, ""), label: dirent.name })
+            menuTree.push({ id: fullpath.replace(process.env.DOC_DIR, ""), label: dirent.name.replace(".md", "") })
         }
     })
     return menuTree;

@@ -11,7 +11,7 @@ export default function Output({ output, height }: { output: string[], height: s
             key={index}
             sx={item.indexOf("Success") >= 0 ? { bgcolor: green[300], mb: 1, borderRadius: 1, p: 1 } : item.indexOf("Error") >= 0 ? { bgcolor: red[300], mb: 1, borderRadius: 1, p: 1 } : { bgcolor: grey[300], mb: 1, borderRadius: 1, p: 1 }}
           >
-            <Typography variant="body2">
+            <Typography variant="body2" whiteSpace={"pre-line"}>
               {item}
             </Typography>
           </Box>
