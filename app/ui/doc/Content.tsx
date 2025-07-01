@@ -2,6 +2,7 @@ import { Container } from "@mui/material";
 import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import Playground from "../playground";
@@ -31,7 +32,7 @@ export default function Content({
 
     return (
         <Container maxWidth={"xl"}>
-            <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex, rehypeRaw]} children={content} components={{
+            <Markdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex, rehypeRaw]} children={content} components={{
                 code({ children, className, ...rest }) {
                     const matchLitex = /language-litex/.exec(className || '')
                     const matchCodeBlock = /language-(\w+)/.exec(className || '')
