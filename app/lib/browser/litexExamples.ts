@@ -1,15 +1,15 @@
 export default [
   {
     title: "syllogism",
-    code: `set human
+    code: `obj human set
 prop intelligent(x human)
 
 know:
     forall x human:
-        x is intelligent
+        $intelligent(x)
 
 obj Jordan human
-Jordan is intelligent`,
+$intelligent(Jordan)`,
   },
   {
     title: "multivariate_linear_equation",
@@ -49,9 +49,9 @@ x = -4`,
 # Congruence, two binary relations, one linking line segments and one linking angles, each denoted by an infix ≅.
 # Line segments, angles, and triangles may each be defined in terms of points and straight lines, using the relations of betweenness and containment. All points, straight lines, and planes in the following axioms are distinct unless otherwise stated.
 
-set point
-set line
-set plane
+obj point set
+obj line set
+obj plane set
 
 prop point_on_line(p point, l line)
 prop point_on_plane(q point, p plane)
@@ -111,7 +111,6 @@ know forall a point, l line:
 prove:
     obj a point, l line:
         $point_on_line(a, l)
-        $point_on_line(b, l)
 
     $exist_at_least_two_points_on_line(a, l)
 
@@ -198,6 +197,14 @@ prove:
 
 # 8. There exist at least four points not lying in a plane.
 
+prop not_on_any_plane(a point, b point, c point, d point):
+    forall p plane:
+        or:
+            not $point_on_plane(a, p)
+            not $point_on_plane(b, p)
+            not $point_on_plane(c, p)
+            not $point_on_plane(d, p)
+
 exist_prop a point, b point, c point, d point st exist_four_points_not_on_any_plane():
     a != b
     a != c
@@ -209,13 +216,6 @@ exist_prop a point, b point, c point, d point st exist_four_points_not_on_any_pl
 
 know $exist_four_points_not_on_any_plane()
 
-prop not_on_any_plane(a point, b point, c point, d point):
-    forall p plane:
-        or:
-            not $point_on_plane(a, p)
-            not $point_on_plane(b, p)
-            not $point_on_plane(c, p)
-            not $point_on_plane(d, p)
 
 prove:
     have a , b , c , d  st $exist_four_points_not_on_any_plane()
@@ -324,7 +324,7 @@ prove:
 
 # 4. Pasch's Axiom: Let A, B, C be three points not lying in the same line and let a be a line lying in the plane ABC and not passing through any of the points A, B, C. Then, if the line a passes through a point of the segment AB, it will also pass through either a point of the segment BC or a point of the segment AC.
 
-set finite_line
+obj finite_line set
 
 fn finite_line_of(a point, b point) finite_line:
     a != b
@@ -427,8 +427,6 @@ know:
 
 know:
     $commutative_prop(finite_line_equal)
-    $commutative_fn(line_of)
-    $commutative_fn(finite_line_of)
     forall a point, b point:
         a != b
         then:
@@ -516,9 +514,9 @@ prove:
 
 # TODO: It seems to me that the proposition itself is not that clear. I formalize it in my own understanding.
 
-set ray
-set half_plane
-set angle
+obj ray set
+obj half_plane set
+obj angle set
 
 prop point_on_ray(a point, r ray)
 
@@ -544,6 +542,12 @@ fn angle_of_two_rays_with_the_same_start_point(a point, r1 ray, r2 ray) angle:
             x = a
 
 prop angle_equal(ang1 angle, ang2 angle)
+
+prop half_plane_to_ray(a point, r ray, p half_plane):
+    $point_on_ray(a, r)
+    or:
+        $half_plane_left_to_ray(a, r, p)
+        $half_plane_right_to_ray(a, r, p)
 
 know exist_prop r2 ray st exist_a_ray_with_the_same_angel_with_given_ray_and_half_plane(a point, r1 ray, p half_plane, ang angle):
     dom:
@@ -575,7 +579,7 @@ prove:
 
 # 6. If, in the two triangles ABC and A′B′C′ the congruences AB ≅ A′B′, AC ≅ A′C′, ∠BAC ≅ ∠B′A′C′ hold, then the congruence ∠ABC ≅ ∠A′B′C′ holds (and, by a change of notation, it follows that ∠ACB ≅ ∠A′C′B′ also holds).
 
-set triangle
+obj triangle set
 
 fn triangle_of_points(a point, b point, c point) triangle:
     dom:
@@ -635,19 +639,18 @@ prove:
 
 # 1. Playfair's axiom: Let a be any line and A a point not on it. Then there is at most one line in the plane, determined by a and A, that passes through A and does not intersect a.
 
+prop point_on_line1_then_not_on_line2(a point, l1 line, l2 line):
+    dom:
+        $point_on_line(a, l1)
+    iff:
+        not $point_on_line(a, l2)
+
 prop parallel(l1 line, l2 line):
     forall x point:
         $point_on_line1_then_not_on_line2(x, l1, l2)
     
     forall x point:
         $point_on_line1_then_not_on_line2(x, l2, l1)
-
-
-prop point_on_line1_then_not_on_line2(a point, l1 line, l2 line):
-    dom:
-        $point_on_line(a, l1)
-    iff:
-        not $point_on_line(a, l2)
 
 know exist_prop l2 line st exist_one_and_only_one_line_through_point_not_intersect_line(a point, l line):
     dom:
