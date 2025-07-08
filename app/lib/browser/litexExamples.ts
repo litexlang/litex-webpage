@@ -1,3 +1,5 @@
+import { title } from "process";
+
 export default [
   {
     title: "syllogism",
@@ -1284,5 +1286,68 @@ know forall a Z, b Z, d Z:
         gcd(a, b*d) = 1
 
 `
+  },
+  {
+    title: "sqrt_2_is_irrational",
+    code: `fn logBase(x, y N) N:
+    dom:
+        y != 0
+
+know forall x, y, z N:
+    logBase(x^y, z) = y * logBase(x, z)
+    logBase(x*y, z) = logBase(x, z) + logBase(y, z)
+
+know forall x N:
+    logBase(x, x) = 1
+
+claim:
+    not sqrt(2) $in Q
+    prove_by_contradiction:
+        have x, y st $rational_number_representation_in_fraction(sqrt(2))
+        
+        x = sqrt(2) * y
+        x ^ 2 = (sqrt(2) ^ 2) * (y ^ 2)
+        sqrt(2) ^ 2 = 2 # must write it out
+        x ^ 2 = 2 * (y ^ 2)
+        logBase(x ^ 2, 2) = logBase(2 * (y ^ 2), 2)
+        
+        logBase(x ^ 2, 2) = 2 * logBase(x, 2)
+        logBase(y ^ 2, 2) = 2 * logBase(y, 2)
+
+        logBase(2 * (y ^ 2), 2) = logBase(2, 2) + logBase(y ^ 2, 2)
+        logBase(2, 2) = 1
+        logBase(2 * (y ^ 2), 2) = 1 + logBase(y ^ 2, 2)
+
+        logBase(x ^ 2, 2) = 1 + 2 * logBase(y, 2)
+        2 * logBase(x, 2) = 1 + 2 * logBase(y, 2)
+
+        (2 * logBase(x, 2)) % 2 = (1 + 2 * logBase(y, 2)) % 2
+        (2 * logBase(x, 2)) % 2 = 0
+        0 = (1 + 2 * logBase(y, 2)) % 2
+
+        (1 + 2 * logBase(y, 2)) % 2 = 1 % 2 + (2 * logBase(y, 2)) % 2
+        1 % 2 + (2 * logBase(y, 2)) % 2 = 1 + 0
+        0 = 1`
+  },
+  {
+    title: "Z_R_is_group",
+    code: `prop is_group(s set, mul fn(s, s)s, inv fn(s)s, e s):
+    forall x s, y s, z s:
+        mul(mul(x, y), z) = mul(x, mul(y, z))
+    forall x s:
+        mul(x, inv(x)) = e
+        mul(inv(x), x) = e
+
+fn inverse(x R)R:
+    inverse(x) + x = 0
+
+forall x R:
+    inverse(x) $in R
+    x + inverse(x) = inverse(x) + x
+    inverse(x) + x = 0
+    x + inverse(x) = 0
+
+$is_group(R, +, inverse, 0)
+$is_group(Z, +, inverse, 0)`
   }
 ];
