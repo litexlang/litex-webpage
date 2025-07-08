@@ -1,5 +1,3 @@
-import { title } from "process";
-
 export default [
   {
     title: "syllogism",
