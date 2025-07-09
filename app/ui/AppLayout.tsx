@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SnackbarProvider } from "notistack";
 import Image from "next/image";
-import logo from "./homepage/logo.png"
+import fontLogo from "./logo/fontLogo.png"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import { useRouter } from "next/navigation";
 
@@ -47,7 +47,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             },
           }}>
           <Toolbar>
-            <Image src={logo} alt="" width={36} height={36} style={{ cursor: "pointer" }} onClick={(() => { router.push("/") })} />
+            <Image src={fontLogo} alt="" width={144} height={36} style={{ cursor: "pointer" }} onClick={(() => { router.push("/") })} />
           </Toolbar>
           <Divider />
           <RichTreeView
