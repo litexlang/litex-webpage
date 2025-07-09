@@ -1,20 +1,21 @@
 "use client";
-import { AppBar, Box, Button, Toolbar } from "@mui/material";
+import { Box, Divider, Drawer, Toolbar } from "@mui/material";
 import { ReactNode, useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SnackbarProvider } from "notistack";
-import { grey } from "@mui/material/colors";
-import { OpenInNew } from "@mui/icons-material";
 import Image from "next/image";
 import logo from "./homepage/logo.png"
+import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
+import { useRouter } from "next/navigation";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   // route vars
   const pathname = usePathname();
+  const router = useRouter()
 
   // state vars
-  const [routes, setRoutes] = useState([{ icon: "", title: "", path: "" }])
+  const [routes, setRoutes] = useState([{ title: "", path: "" }])
+  const [expandedItemsIds] = useState<string[]>(["/doc/Documents"]);
 
   const routesInit = () => {
     fetch("/api/route").then((resp) => {
@@ -26,40 +27,45 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     });
   }
 
+  const shouldPopup = (path: string) => {
+    return path.indexOf("https://") === 0 || path.indexOf("http://") === 0;
+  }
+
   useEffect(() => { routesInit() }, [])
 
   return (
     <SnackbarProvider maxSnack={3} autoHideDuration={1000}>
-      <AppBar elevation={0} color="default">
-        <Toolbar>
-          <Box flex={1}>
-            <Link href={"/"}>
-              <Image src={logo} alt="" width={36} height={36} />
-            </Link>
-          </Box>
-          {routes && routes.map((route, index) => (
-            <Link
-              key={index}
-              href={route.path}
-              target={route.path.indexOf("http") === 0 ? "_blank" : "_self"}
-              style={{
-                textDecoration: "none",
-                color: pathname === route.path ? grey[900] : grey[600],
-              }}
-            >
-              <Button
-                startIcon={route.icon}
-                endIcon={route.path.indexOf("http") === 0 && <OpenInNew />}
-                color="inherit"
-                sx={{ mx: 0.5 }}
-              >
-                {route.title}
-              </Button>
-            </Link>
-          ))}
-        </Toolbar>
-      </AppBar>
-      {children}
-    </SnackbarProvider>
+      <Box sx={{ display: "flex" }}>
+        <Drawer variant="permanent" anchor="left"
+          sx={{
+            width: 240,
+            '& .MuiDrawer-paper': {
+              width: 240,
+            },
+          }}>
+          <Toolbar>
+            <Image src={logo} alt="" width={36} height={36} style={{ cursor: "pointer" }} onClick={(() => { router.push("/") })} />
+          </Toolbar>
+          <Divider />
+          <RichTreeView
+            items={routes}
+            selectedItems={pathname}
+            defaultExpandedItems={expandedItemsIds}
+            getItemId={(item) => item.path}
+            getItemLabel={(item) => item.title}
+            sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+            onItemClick={(event, docPath) => {
+              if (shouldPopup(docPath)) {
+                window.open(docPath, "_blank");
+              } else if (!expandedItemsIds.includes(docPath)) {
+                router.push(docPath)
+              }
+            }} />
+        </Drawer>
+        <Box flex={1}>
+          {children}
+        </Box>
+      </Box>
+    </SnackbarProvider >
   );
 }

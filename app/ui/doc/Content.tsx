@@ -10,25 +10,27 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 export default function Content({
-    docId
+    docPath
 }: {
-    docId: string
+    docPath: string
 }) {
 
     // state vars
     const [content, setContent] = useState("loading...")
 
     const contentInit = () => {
-        fetch("/api/content?" + new URLSearchParams({ docId })).then((resp) => {
-            if (resp.status === 200) {
-                resp.json().then((json) => {
-                    setContent(json.data);
-                });
-            }
-        });
+        if (docPath) {
+            fetch("/api/content?" + new URLSearchParams({ docPath })).then((resp) => {
+                if (resp.status === 200) {
+                    resp.json().then((json) => {
+                        setContent(json.data);
+                    });
+                }
+            });
+        }
     }
 
-    useEffect(() => { if (docId) contentInit() }, [docId])
+    useEffect(() => { contentInit() }, [docPath])
 
     return (
         <Container maxWidth={"xl"}>
