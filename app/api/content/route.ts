@@ -5,10 +5,12 @@ export const dynamic = "force-dynamic";
 
 export const GET = async (request: NextRequest) => {
   const requestParams = request.nextUrl.searchParams;
-  const docId = requestParams.get("docId");
-  if (docId) {
+  const docPath = requestParams.get("docPath");
+  if (docPath) {
     return NextResponse.json(
-      { data: docReader(process.env.DOC_DIR + docId) },
+      {
+        data: docReader(process.env.DOC_DIR + docPath + ".md"),
+      },
       { status: 200 }
     );
   } else {

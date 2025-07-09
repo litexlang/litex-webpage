@@ -1,14 +1,16 @@
-import { menuTreeLoader } from "@/app/lib/server/docLoader";
+import { demoReader } from "@/app/lib/server/demoLoader";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export const GET = async (request: NextRequest) => {
   const requestParams = request.nextUrl.searchParams;
-  const docName = requestParams.get("docName");
-  if (docName) {
+  const demoPath = requestParams.get("demoPath");
+  if (demoPath) {
     return NextResponse.json(
-      { data: menuTreeLoader(process.env.DOC_DIR + docName) },
+      {
+        data: demoReader(process.env.DEMO_DIR + demoPath + ".lix"),
+      },
       { status: 200 }
     );
   } else {
