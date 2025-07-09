@@ -28,7 +28,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "app/lib/theme.tsx",
-    "app/ui/AppLayout.tsx",
+    "app/ui/AppLayout_backup.tsx",
     "next.comfig.mjs"
   ],
   "exclude": ["node_modules"]
