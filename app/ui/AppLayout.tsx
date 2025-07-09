@@ -15,7 +15,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   // state vars
   const [routes, setRoutes] = useState([{ title: "", path: "" }])
-  const [expandedItemsIds] = useState<string[]>(["/doc/Documents"]);
 
   const routesInit = () => {
     fetch("/api/route").then((resp) => {
@@ -29,6 +28,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const shouldPopup = (path: string) => {
     return path.indexOf("https://") === 0 || path.indexOf("http://") === 0;
+  }
+
+  const shouldJump = (path: string) => {
+    return path.lastIndexOf("/") !== path.length - 1 || path === "/";
   }
 
   useEffect(() => { routesInit() }, [])
@@ -50,15 +53,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <RichTreeView
             items={routes}
             selectedItems={pathname}
-            defaultExpandedItems={expandedItemsIds}
             getItemId={(item) => item.path}
             getItemLabel={(item) => item.title}
             sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
             onItemClick={(event, docPath) => {
-              if (shouldPopup(docPath)) {
-                window.open(docPath, "_blank");
-              } else if (!expandedItemsIds.includes(docPath)) {
-                router.push(docPath)
+              if (shouldJump(docPath)) {
+                if (shouldPopup(docPath)) {
+                  window.open(docPath, "_blank");
+                } else {
+                  router.push(docPath)
+                }
               }
             }} />
         </Drawer>

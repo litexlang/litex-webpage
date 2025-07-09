@@ -12,7 +12,7 @@ export function menuTreeLoader(path: string, type: "doc" | "demo", menuTree: Arr
     direntList.forEach((dirent) => {
         const fullpath = dirent.path + '/' + dirent.name
         if (dirent.isDirectory()) {
-            menuTree.push({ title: dirent.name.replaceAll("_", " "), path: fullpath.replace(pathReplacedString, pathReplacingString), children: menuTreeLoader(fullpath, type) })
+            menuTree.push({ title: dirent.name.replaceAll("_", " "), path: fullpath.replace(pathReplacedString, pathReplacingString) + "/", children: menuTreeLoader(fullpath, type) })
         } else {
             menuTree.push({ title: dirent.name.replace(titleReplacedString, "").replaceAll("_", " "), path: fullpath.replace(pathReplacedString, pathReplacingString).replace(titleReplacedString, "") })
         }
