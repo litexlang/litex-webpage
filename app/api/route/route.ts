@@ -17,7 +17,11 @@ export const GET = async () => {
   routeList.push(
     {
       title: "Github",
-      path: "https://github.com/litexlang/tslitex",
+      path: "https://github.com/litexlang/golitex",
+    },
+    {
+      title: "Zulip Community",
+      path: "https://litex.zulipchat.com/join/c4e7foogy6paz2sghjnbujov/",
     }
   );
   return NextResponse.json({ data: routeList }, { status: 200 });
