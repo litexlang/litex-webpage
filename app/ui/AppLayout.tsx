@@ -56,12 +56,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             getItemId={(item) => item.path}
             getItemLabel={(item) => item.title}
             sx={{ overflow: "auto" }}
-            onItemClick={(event, docPath) => {
-              if (shouldJump(docPath)) {
-                if (shouldPopup(docPath)) {
-                  window.open(docPath, "_blank");
+            onItemClick={(event, path) => {
+              if (shouldJump(path)) {
+                if (shouldPopup(path)) {
+                  window.open(path, "_blank");
                 } else {
-                  router.push(docPath)
+                  router.push(path)
                 }
               }
             }} />
