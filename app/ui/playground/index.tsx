@@ -15,8 +15,8 @@ export default function Playground({ height, demoPath, initCode }: { height: str
     const codeInit = () => {
         if (initCode) {
             setCode(initCode);
-        } else if (demoPath) {
-            fetch("/api/code?" + new URLSearchParams({ demoPath })).then((resp) => {
+        } else {
+            fetch("/api/code?" + new URLSearchParams({ demoPath: demoPath || "syllogism" })).then((resp) => {
                 if (resp.status === 200) {
                     resp.json().then((json) => {
                         setCode(json.data);
