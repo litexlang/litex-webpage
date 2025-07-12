@@ -55,7 +55,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             selectedItems={pathname}
             getItemId={(item) => item.path}
             getItemLabel={(item) => item.title}
-            sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+            sx={{ overflow: "auto" }}
             onItemClick={(event, docPath) => {
               if (shouldJump(docPath)) {
                 if (shouldPopup(docPath)) {
