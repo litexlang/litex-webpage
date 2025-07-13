@@ -21,7 +21,7 @@ export const GET = async () => {
     },
     {
       title: "Zulip Community",
-      path: "https://litex.zulipchat.com/join/c4e7foogy6paz2sghjnbujov/",
+      path: "https://litex.zulipchat.com/join/c4e7foogy6paz2sghjnbujov",
     }
   );
   return NextResponse.json({ data: routeList }, { status: 200 });
