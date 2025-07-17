@@ -6,14 +6,14 @@ export default function CodeEditor({
   code,
   setCode,
   editorRef,
-  height
+  height,
 }: {
   code: string;
   setCode: (value: string) => void;
   editorRef:
   | MutableRefObject<editor.IStandaloneCodeEditor>
   | MutableRefObject<null>;
-  height: string | number
+  height: string | number;
 }) {
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;

@@ -12,7 +12,7 @@ export const POST = async (request: NextRequest) => {
         data: (await litexExecutor(litexString))
           .split("\n\n")
           .filter((line: string) => line.trim() !== "")
-          .map((line: string) => line.trim())
+          .map((line: string) => line.trim()),
       },
       { status: 200 }
     );

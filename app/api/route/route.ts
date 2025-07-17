@@ -5,13 +5,11 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export const GET = async () => {
-  const routeList = []
-  routeList.push(
-    {
-      title: "Homepage",
-      path: "/",
-    }
-  );
+  const routeList = [];
+  routeList.push({
+    title: "Homepage",
+    path: "/",
+  });
   routeList.push(...docRouteLoader());
   routeList.push(demoRouteLoader());
   routeList.push(

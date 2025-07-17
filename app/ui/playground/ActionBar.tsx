@@ -7,13 +7,13 @@ import { editor } from "monaco-editor";
 export default function ActionBar({
   code,
   editorRef,
-  setOutput
+  setOutput,
 }: {
   code: string;
   editorRef:
-  | MutableRefObject<editor.IStandaloneCodeEditor>
-  | MutableRefObject<null>;
-  setOutput: (value: string[]) => void
+    | MutableRefObject<editor.IStandaloneCodeEditor>
+    | MutableRefObject<null>;
+  setOutput: (value: string[]) => void;
 }) {
   const getSelectionValue = () => {
     if (editorRef.current) {
@@ -28,18 +28,20 @@ export default function ActionBar({
   const analyseCode = (inputCode: string) => {
     fetch("/api/litex", {
       method: "POST",
-      body: JSON.stringify({ "litexString": inputCode }),
-    }).then((resp) => {
-      if (resp.status === 200) {
-        resp.json().then((json) => {
-          setOutput(json.data);
-        });
-      } else {
-        setOutput(["[Server Error] Try later..."])
-      }
-    }).catch(() => {
-      setOutput(["[Network Error] Try later..."])
-    });
+      body: JSON.stringify({ litexString: inputCode }),
+    })
+      .then((resp) => {
+        if (resp.status === 200) {
+          resp.json().then((json) => {
+            setOutput(json.data);
+          });
+        } else {
+          setOutput(["[Server Error] Try later..."]);
+        }
+      })
+      .catch(() => {
+        setOutput(["[Network Error] Try later..."]);
+      });
   };
 
   const executeSelectedCode = () => {
