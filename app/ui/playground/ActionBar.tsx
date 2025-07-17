@@ -91,10 +91,6 @@ export default function ActionBar({
     analyseCode(code);
   };
 
-  useEffect(() => {
-    if (code) executeCode();
-  }, [targetFormat]);
-
   return (
     <Box display={"flex"}>
       <Tooltip arrow title={"Run all code"}>
