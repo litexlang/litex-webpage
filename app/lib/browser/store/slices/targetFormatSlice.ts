@@ -6,7 +6,7 @@ export interface TargetFormatState {
   value: TargetFormat;
 }
 
-const initialState: TargetFormatState = { value: TargetFormat.Latex };
+const initialState: TargetFormatState = { value: TargetFormat.Output };
 
 export const codeSlice = createSlice({
   name: "targetFormat",
