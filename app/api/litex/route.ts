@@ -5,14 +5,12 @@ export const dynamic = "force-dynamic";
 
 export const POST = async (request: NextRequest) => {
   const requestBody = await request.json();
+  const targetFormat = requestBody.targetFormat;
   const litexString = requestBody.litexString;
   if (litexString) {
     return NextResponse.json(
       {
-        data: (await litexExecutor(litexString))
-          .split("\n\n")
-          .filter((line: string) => line.trim() !== "")
-          .map((line: string) => line.trim()),
+        data: await litexExecutor(targetFormat, litexString),
       },
       { status: 200 }
     );

@@ -1,10 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import codeReducer from "./slices/codeSlice";
+import targetFormatReducer from "./slices/targetFormatSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      code: codeReducer,
+      targetFormat: targetFormatReducer,
     },
   });
 };

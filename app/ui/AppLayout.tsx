@@ -7,6 +7,7 @@ import Image from "next/image";
 import fontLogo from "./logo/fontLogo.png";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import { useRouter } from "next/navigation";
+import { Route } from "../lib/structs/interfaces";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   // route vars
@@ -14,7 +15,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   // state vars
-  const [routes, setRoutes] = useState([{ title: "", path: "" }]);
+  const [routes, setRoutes] = useState<Route[]>([{ title: "", path: "" }]);
 
   const routesInit = () => {
     fetch("/api/route").then((resp) => {
