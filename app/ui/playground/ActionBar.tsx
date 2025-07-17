@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
-import { MutableRefObject, useEffect } from "react";
+import { MutableRefObject } from "react";
 import { editor } from "monaco-editor";
 import { TargetFormat } from "@/app/lib/structs/enums";
 import { useDispatch, useSelector } from "react-redux";
