@@ -83,12 +83,15 @@ export default function ActionBar({
 
   const executeSelectedCode = () => {
     setOutput("Loading...");
-    analyseCode(getSelectionValue());
+    const selectedCode = getSelectionValue();
+    if (selectedCode) analyseCode(selectedCode);
+    else setOutput("[Input Error] Empty selected code");
   };
 
   const executeCode = () => {
     setOutput("Loading...");
-    analyseCode(code);
+    if (code) analyseCode(code);
+    else setOutput("[Input Error] Empty code");
   };
 
   useEffect(() => {
