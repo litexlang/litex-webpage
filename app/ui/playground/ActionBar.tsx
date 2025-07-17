@@ -83,24 +83,21 @@ export default function ActionBar({
 
   const executeSelectedCode = () => {
     setOutput("Loading...");
-    const selectedCode = getSelectionValue();
-    if (selectedCode) analyseCode(selectedCode);
-    else setOutput("[Input Error] Empty selected code");
+    analyseCode(getSelectionValue());
   };
 
   const executeCode = () => {
     setOutput("Loading...");
-    if (code) analyseCode(code);
-    else setOutput("[Input Error] Empty code");
+    analyseCode(code);
   };
 
   useEffect(() => {
-    executeCode();
+    if (code) executeCode();
   }, [targetFormat]);
 
   return (
     <Box display={"flex"}>
-      <Tooltip arrow title={"execute all code"}>
+      <Tooltip arrow title={"Run all code"}>
         <ActionBarIconButton
           size="small"
           onClick={() => {
@@ -110,7 +107,7 @@ export default function ActionBar({
           <PlayArrow fontSize="inherit" />
         </ActionBarIconButton>
       </Tooltip>
-      <Tooltip arrow title={"execute selected code"}>
+      <Tooltip arrow title={"Run selected code"}>
         <ActionBarIconButton
           size="small"
           onClick={() => {
