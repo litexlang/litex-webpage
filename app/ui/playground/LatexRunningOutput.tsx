@@ -12,15 +12,17 @@ export default function LatexRunningOutput({
   const latexContentTransformer: (str: string) => string[] = (str) => {
     return str
       .split("\n")
-      .filter((line: string) => line.trim() !== "")
+      .filter(
+        (line: string) => line.trim() !== "" && line.trim().indexOf("\\") !== 0
+      )
       .map((line: string) => line.trim());
   };
 
   return (
     <Box height={height} overflow={"auto"} p={1}>
-      {latexContentTransformer(latexContent).map((item, index) => (
-        <Box key={index} mb={2}>
-          <Latex>{item}</Latex>
+      {latexContentTransformer(latexContent).map((line, index) => (
+        <Box key={index} mb={2} fontFamily={"tgbonum"}>
+          <Latex>{line}</Latex>
         </Box>
       ))}
     </Box>
