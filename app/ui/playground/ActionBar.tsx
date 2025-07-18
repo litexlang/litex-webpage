@@ -15,13 +15,13 @@ import {
   PlayArrow,
   PlaylistPlay,
 } from "@mui/icons-material";
-import { MutableRefObject, useState } from "react";
+import { MutableRefObject, useEffect, useState } from "react";
 import { editor } from "monaco-editor";
 import { TargetFormat } from "@/app/lib/structs/enums";
 import { useDispatch, useSelector } from "react-redux";
 import { setTargetFormat } from "@/app/lib/browser/store/slices/targetFormatSlice";
 import { RootState } from "@/app/lib/browser/store";
-import { clipboardObj } from "@/app/lib/structs/interfaces";
+import { clipboardPrepObj } from "@/app/lib/structs/interfaces";
 
 export default function ActionBar({
   code,
@@ -58,10 +58,17 @@ export default function ActionBar({
   );
 
   // state vars
-  const [clipboard, setClipboard] = useState<clipboardObj>({
+  const [clipboardPrep, setClipboardPrep] = useState<clipboardPrepObj>({
     value: "",
     copied: false,
   });
+
+  const resetClipboardPrep = () => {
+    setClipboardPrep({
+      value: "",
+      copied: false,
+    });
+  };
 
   const getSelectionValue = () => {
     if (editorRef.current) {
@@ -82,7 +89,7 @@ export default function ActionBar({
         if (resp.status === 200) {
           resp.json().then((json) => {
             setOutput(json.data);
-            setClipboard({ value: json.data, copied: false });
+            setClipboardPrep({ value: json.data, copied: false });
           });
         } else {
           setOutput("[Server Error] Try later...");
@@ -95,25 +102,27 @@ export default function ActionBar({
 
   const executeSelectedCode = () => {
     setOutput("Loading...");
-    setClipboard({ value: "", copied: false });
     analyseCode(getSelectionValue());
   };
 
   const executeCode = () => {
     setOutput("Loading...");
-    setClipboard({ value: "", copied: false });
     analyseCode(code);
   };
 
   const copyLatexToClipboard = () => {
-    if (clipboard.value) {
-      navigator.clipboard.writeText(clipboard.value);
-      setClipboard({ ...clipboard, copied: true });
+    if (clipboardPrep.value) {
+      navigator.clipboard.writeText(clipboardPrep.value);
+      setClipboardPrep({ ...clipboardPrep, copied: true });
       setTimeout(() => {
-        setClipboard({ ...clipboard, copied: false });
+        setClipboardPrep({ ...clipboardPrep, copied: false });
       }, 2000);
     }
   };
+
+  useEffect(() => {
+    resetClipboardPrep();
+  }, [targetFormat]);
 
   return (
     <Box display={"flex"}>
@@ -150,16 +159,18 @@ export default function ActionBar({
       {targetFormat === TargetFormat.Latex && (
         <Tooltip
           arrow
-          title={clipboard.copied ? "Copied" : "Copy LaTeX text to clipboard"}
+          title={
+            clipboardPrep.copied ? "Copied" : "Copy LaTeX text to clipboard"
+          }
         >
           <ActionBarIconButton
-            disabled={!clipboard.value}
+            disabled={!clipboardPrep.value}
             size="small"
             onClick={() => {
               copyLatexToClipboard();
             }}
           >
-            {clipboard.copied ? (
+            {clipboardPrep.copied ? (
               <Done fontSize="inherit" />
             ) : (
               <ContentPaste fontSize="inherit" />

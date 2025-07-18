@@ -9,7 +9,7 @@ export interface menuTreeObj {
   children?: Array<menuTreeObj>;
 }
 
-export interface clipboardObj {
+export interface clipboardPrepObj {
   value: string;
   copied: boolean;
 }
