@@ -9,15 +9,23 @@ import {
   TabsProps,
   Tooltip,
 } from "@mui/material";
-import { PlayArrow, PlaylistPlay } from "@mui/icons-material";
-import { MutableRefObject } from "react";
+import {
+  ContentPaste,
+  CopyAll,
+  Copyright,
+  Done,
+  Inventory,
+  PlayArrow,
+  PlaylistPlay,
+} from "@mui/icons-material";
+import { MutableRefObject, useState } from "react";
 import { editor } from "monaco-editor";
 import { TargetFormat } from "@/app/lib/structs/enums";
 import { useDispatch, useSelector } from "react-redux";
 import { setTargetFormat } from "@/app/lib/browser/store/slices/targetFormatSlice";
 import { RootState } from "@/app/lib/browser/store";
+import { clipboardObj } from "@/app/lib/structs/interfaces";
 
-// TODO
 export default function ActionBar({
   code,
   editorRef,
@@ -52,6 +60,12 @@ export default function ActionBar({
     (state: RootState) => state.targetFormat.value
   );
 
+  // state vars
+  const [clipboard, setClipboard] = useState<clipboardObj>({
+    value: "",
+    copied: false,
+  });
+
   const getSelectionValue = () => {
     if (editorRef.current) {
       return editorRef.current
@@ -71,6 +85,7 @@ export default function ActionBar({
         if (resp.status === 200) {
           resp.json().then((json) => {
             setOutput(json.data);
+            setClipboard({ value: json.data, copied: false });
           });
         } else {
           setOutput("[Server Error] Try later...");
@@ -83,12 +98,24 @@ export default function ActionBar({
 
   const executeSelectedCode = () => {
     setOutput("Loading...");
+    setClipboard({ value: "", copied: false });
     analyseCode(getSelectionValue());
   };
 
   const executeCode = () => {
     setOutput("Loading...");
+    setClipboard({ value: "", copied: false });
     analyseCode(code);
+  };
+
+  const copyLatexToClipboard = () => {
+    if (clipboard.value) {
+      navigator.clipboard.writeText(clipboard.value);
+      setClipboard({ ...clipboard, copied: true });
+      setTimeout(() => {
+        setClipboard({ ...clipboard, copied: false });
+      }, 2000);
+    }
   };
 
   return (
@@ -123,6 +150,26 @@ export default function ActionBar({
         <ActionBarTab label={TargetFormat.Output} value={TargetFormat.Output} />
         <ActionBarTab label={TargetFormat.Latex} value={TargetFormat.Latex} />
       </ActionBarTabs>
+      {targetFormat === TargetFormat.Latex && (
+        <Tooltip
+          arrow
+          title={clipboard.copied ? "Copied" : "Copy LaTeX text to clipboard"}
+        >
+          <ActionBarIconButton
+            disabled={!clipboard.value}
+            size="small"
+            onClick={() => {
+              copyLatexToClipboard();
+            }}
+          >
+            {clipboard.copied ? (
+              <Done fontSize="inherit" />
+            ) : (
+              <ContentPaste fontSize="inherit" />
+            )}
+          </ActionBarIconButton>
+        </Tooltip>
+      )}
     </Box>
   );
 }

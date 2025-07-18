@@ -8,3 +8,8 @@ export interface menuTreeObj {
   title: string;
   children?: Array<menuTreeObj>;
 }
+
+export interface clipboardObj {
+  value: string;
+  copied: boolean;
+}

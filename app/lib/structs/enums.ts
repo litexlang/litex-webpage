@@ -1,4 +1,4 @@
 export enum TargetFormat {
   Output = "Output",
-  Latex = "Latex Converter",
+  Latex = "LaTeX Converter",
 }
