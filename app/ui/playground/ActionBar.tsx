@@ -11,10 +11,7 @@ import {
 } from "@mui/material";
 import {
   ContentPaste,
-  CopyAll,
-  Copyright,
   Done,
-  Inventory,
   PlayArrow,
   PlaylistPlay,
 } from "@mui/icons-material";
