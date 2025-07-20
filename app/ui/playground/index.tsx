@@ -17,6 +17,7 @@ export default function Playground({
   demoPath?: string | undefined;
   initCode?: string | undefined;
 }) {
+  // ref vars
   const editorRef = useRef(null);
 
   // redux vars
