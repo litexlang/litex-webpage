@@ -12,8 +12,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { ContentPaste, Done, PlayArrow } from "@mui/icons-material";
-import { MutableRefObject, useEffect, useState } from "react";
-import { editor } from "monaco-editor";
+import { useEffect, useState } from "react";
 import { TargetFormat } from "@/app/lib/structs/enums";
 import { useDispatch, useSelector } from "react-redux";
 import { setTargetFormat } from "@/app/lib/browser/store/slices/targetFormatSlice";
