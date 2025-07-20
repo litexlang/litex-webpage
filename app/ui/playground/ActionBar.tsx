@@ -1,5 +1,7 @@
 import {
   Box,
+  Button,
+  ButtonProps,
   IconButton,
   IconButtonProps,
   styled,
@@ -9,12 +11,7 @@ import {
   TabsProps,
   Tooltip,
 } from "@mui/material";
-import {
-  ContentPaste,
-  Done,
-  PlayArrow,
-  PlaylistPlay,
-} from "@mui/icons-material";
+import { ContentPaste, Done, PlayArrow } from "@mui/icons-material";
 import { MutableRefObject, useEffect, useState } from "react";
 import { editor } from "monaco-editor";
 import { TargetFormat } from "@/app/lib/structs/enums";
@@ -35,6 +32,10 @@ export default function ActionBar({
   setOutput: (value: string) => void;
 }) {
   // style vars
+  const ActionBarButton = styled(Button)<ButtonProps>(() => ({
+    padding: 0,
+  }));
+
   const ActionBarIconButton = styled(IconButton)<IconButtonProps>(() => ({
     cursor: "pointer",
   }));
@@ -70,15 +71,15 @@ export default function ActionBar({
     });
   };
 
-  const getSelectionValue = () => {
-    if (editorRef.current) {
-      return editorRef.current
-        .getModel()!
-        .getValueInRange(editorRef.current.getSelection()!);
-    } else {
-      return "";
-    }
-  };
+  // const getSelectionValue = () => {
+  //   if (editorRef.current) {
+  //     return editorRef.current
+  //       .getModel()!
+  //       .getValueInRange(editorRef.current.getSelection()!);
+  //   } else {
+  //     return "";
+  //   }
+  // };
 
   const analyseCode = (inputCode: string) => {
     fetch("/api/litex", {
@@ -100,10 +101,10 @@ export default function ActionBar({
       });
   };
 
-  const executeSelectedCode = () => {
-    setOutput("Loading...");
-    analyseCode(getSelectionValue());
-  };
+  // const executeSelectedCode = () => {
+  //   setOutput("Loading...");
+  //   analyseCode(getSelectionValue());
+  // };
 
   const executeCode = () => {
     setOutput("Loading...");
@@ -126,26 +127,15 @@ export default function ActionBar({
 
   return (
     <Box display={"flex"}>
-      <Tooltip arrow title={"Run all code"}>
-        <ActionBarIconButton
-          size="small"
-          onClick={() => {
-            executeCode();
-          }}
-        >
-          <PlayArrow fontSize="inherit" />
-        </ActionBarIconButton>
-      </Tooltip>
-      <Tooltip arrow title={"Run selected code"}>
-        <ActionBarIconButton
-          size="small"
-          onClick={() => {
-            executeSelectedCode();
-          }}
-        >
-          <PlaylistPlay fontSize="inherit" />
-        </ActionBarIconButton>
-      </Tooltip>
+      <ActionBarButton
+        size="small"
+        startIcon={<PlayArrow />}
+        onClick={() => {
+          executeCode();
+        }}
+      >
+        Run
+      </ActionBarButton>
       <Box flex={1} />
       <ActionBarTabs
         value={targetFormat}
