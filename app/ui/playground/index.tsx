@@ -20,7 +20,6 @@ export default function Playground({
   const editorRef = useRef(null);
 
   // redux vars
-
   const targetFormat = useSelector(
     (state: RootState) => state.targetFormat.value
   );
@@ -70,7 +69,7 @@ export default function Playground({
     <Box border={2} borderRadius={2} px={1} py={0.5}>
       <Grid2 container columnSpacing={1}>
         <Grid2 size={12}>
-          <ActionBar code={code} editorRef={editorRef} setOutput={setOutput} />
+          <ActionBar code={code} setOutput={setOutput} />
         </Grid2>
         <Grid2 size={6}>
           <CodeEditor

@@ -22,13 +22,9 @@ import { clipboardPrepObj } from "@/app/lib/structs/interfaces";
 
 export default function ActionBar({
   code,
-  editorRef,
   setOutput,
 }: {
   code: string;
-  editorRef:
-    | MutableRefObject<editor.IStandaloneCodeEditor>
-    | MutableRefObject<null>;
   setOutput: (value: string) => void;
 }) {
   // style vars
@@ -71,16 +67,6 @@ export default function ActionBar({
     });
   };
 
-  // const getSelectionValue = () => {
-  //   if (editorRef.current) {
-  //     return editorRef.current
-  //       .getModel()!
-  //       .getValueInRange(editorRef.current.getSelection()!);
-  //   } else {
-  //     return "";
-  //   }
-  // };
-
   const analyseCode = (inputCode: string) => {
     fetch("/api/litex", {
       method: "POST",
@@ -100,11 +86,6 @@ export default function ActionBar({
         setOutput("[Network Error] Try later...");
       });
   };
-
-  // const executeSelectedCode = () => {
-  //   setOutput("Loading...");
-  //   analyseCode(getSelectionValue());
-  // };
 
   const executeCode = () => {
     setOutput("Loading...");
