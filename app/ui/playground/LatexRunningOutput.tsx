@@ -1,5 +1,3 @@
-import { Box } from "@mui/material";
-import Latex from "react-latex-next";
 import "katex/dist/katex.min.css";
 import { Editor } from "@monaco-editor/react";
 import { MutableRefObject } from "react";
