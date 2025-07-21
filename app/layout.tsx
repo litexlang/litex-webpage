@@ -5,7 +5,7 @@ import StoreProvider from "./StoreProvider";
 import { ReactNode } from "react";
 
 export const metadata = {
-  title: "Litex",
+  title: "Litex - Simplest and Easy-to-learn Formal Language",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
