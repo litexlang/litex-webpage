@@ -1,30 +1,30 @@
 import { Box } from "@mui/material";
 import Latex from "react-latex-next";
 import "katex/dist/katex.min.css";
+import { Editor } from "@monaco-editor/react";
+import { MutableRefObject } from "react";
+import { editor } from "monaco-editor";
 
 export default function LatexRunningOutput({
   latexContent,
+  latexEditorRef,
   height,
 }: {
   latexContent: string;
+  latexEditorRef:
+    | MutableRefObject<editor.IStandaloneCodeEditor>
+    | MutableRefObject<null>;
   height: string | number;
 }) {
-  const latexContentTransformer: (str: string) => string[] = (str) => {
-    return str
-      .split("\n")
-      .filter(
-        (line: string) => line.trim() !== "" && line.trim().indexOf("\\") !== 0
-      )
-      .map((line: string) => line.trim());
+  const handleLatexEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
+    latexEditorRef.current = editor;
   };
 
   return (
-    <Box height={height} overflow={"auto"} p={1}>
-      {latexContentTransformer(latexContent).map((line, index) => (
-        <Box key={index} mb={2} fontFamily={"tgbonum"}>
-          <Latex>{line}</Latex>
-        </Box>
-      ))}
-    </Box>
+    <Editor
+      height={height}
+      value={latexContent}
+      onMount={handleLatexEditorDidMount}
+    />
   );
 }

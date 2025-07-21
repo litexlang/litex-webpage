@@ -19,6 +19,7 @@ export default function Playground({
 }) {
   // ref vars
   const editorRef = useRef(null);
+  const latexEditorRef = useRef(null);
 
   // redux vars
   const targetFormat = useSelector(
@@ -47,18 +48,22 @@ export default function Playground({
   };
 
   const outputInit = () => {
-    fetch("/api/litex-version").then((resp) => {
-      if (resp.status === 200) {
-        resp.json().then((json) => {
-          setOutput(
-            "Litex " +
-              json.data +
-              (targetFormat === TargetFormat.Output ? "\n\n" : "\n") +
-              "More information about Litex is available at https://github.com/litexlang/golitex"
-          );
-        });
-      }
-    });
+    if (targetFormat === TargetFormat.Output) {
+      fetch("/api/litex-version").then((resp) => {
+        if (resp.status === 200) {
+          resp.json().then((json) => {
+            setOutput(
+              "Litex " +
+                json.data +
+                (targetFormat === TargetFormat.Output ? "\n\n" : "\n") +
+                "More information about Litex is available at https://github.com/litexlang/golitex"
+            );
+          });
+        }
+      });
+    } else {
+      setOutput("");
+    }
   };
 
   useEffect(() => {
@@ -84,7 +89,11 @@ export default function Playground({
           {targetFormat === TargetFormat.Output ? (
             <LitexRunningOutput litexRunningResult={output} height={height} />
           ) : (
-            <LatexRunningOutput latexContent={output} height={height} />
+            <LatexRunningOutput
+              latexContent={output}
+              latexEditorRef={latexEditorRef}
+              height={height}
+            />
           )}
         </Grid2>
       </Grid2>
